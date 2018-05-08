@@ -100,7 +100,7 @@ class API(object):
             if hasattr(response.request, 'body'):
                 request_body = response.request.body
 
-        if 'code' in response_json or 'message' in response_json:
+        if isinstance(response_json, dict) and ('code' in response_json or 'message' in response_json):
             reason = u" - ".join([
                 unicode(response_json.get(key)) for key in ['code', 'message', 'data'] \
                 if key in response_json
