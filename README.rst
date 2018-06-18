@@ -67,6 +67,19 @@ If you have installed from source, then you can test with unittest:
     pip install -r requirements-test.txt
     python -m unittest -v tests
 
+Publishing
+----------
+
+Note to self because I keep forgetting how to use Twine >_<
+
+.. code-block:: bash
+
+    python setup.py sdist bdist_wheel
+    # Check that you've updated changelog
+    twine upload dist/wordpress-api-$(python setup.py --version) -r pypitest
+    twine upload dist/wordpress-api-$(python setup.py --version) -r pypi
+
+
 Getting started
 ---------------
 
@@ -275,6 +288,11 @@ According the the [documentation](https://developer.wordpress.org/rest-api/refer
 
 Changelog
 ---------
+
+1.2.7 - 2018/06/18
+~~~~~~~~~~~~~~~~~~
+- Don't crash on "-1" response from API.
+- Fix windows encoding error
 
 1.2.6 - 2018/01/29
 ~~~~~~~~~~~~~~~~~~
