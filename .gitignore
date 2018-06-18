@@ -10,3 +10,4 @@ run3.py
 .eggs/*
 .cache/v/cache/lastfailed
 pylint_report.txt
+.pypirc
