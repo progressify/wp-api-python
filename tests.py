@@ -1001,15 +1001,15 @@ class WPAPITestCasesBase(unittest.TestCase):
         response_obj = response.json()
         self.assertEqual(response_obj['name'], self.api_params['wp_user'])
 
-class WPAPITestCasesBasic(WPAPITestCasesBase):
-    def setUp(self):
-        super(WPAPITestCasesBasic, self).setUp()
-        self.api_params.update({
-            'user_auth': True,
-            'basic_auth': True,
-            'query_string_auth': False,
-        })
-        self.wpapi = API(**self.api_params)
+# class WPAPITestCasesBasic(WPAPITestCasesBase):
+#     def setUp(self):
+#         super(WPAPITestCasesBasic, self).setUp()
+#         self.api_params.update({
+#             'user_auth': True,
+#             'basic_auth': True,
+#             'query_string_auth': False,
+#         })
+#         self.wpapi = API(**self.api_params)
 
 # class WPAPITestCasesBasicV1(WPAPITestCasesBase):
 #     def setUp(self):

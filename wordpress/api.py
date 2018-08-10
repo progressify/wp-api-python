@@ -8,6 +8,7 @@ __title__ = "wordpress-api"
 
 # from requests import request
 import logging
+from six import text_type, u
 from json import dumps as jsonencode
 
 from wordpress.auth import BasicAuth, OAuth, OAuth_3Leg
@@ -164,12 +165,12 @@ class API(object):
                     header_url = StrUtils.eviscerate(header_url, '/')
                     remedy = "try changing url to %s" % header_url
 
-        msg = "API call to %s returned \nCODE: %s\nRESPONSE:%s \nHEADERS: %s\nREQ_BODY:%s" % (
+        msg = u"API call to %s returned \nCODE: %s\nRESPONSE:%s \nHEADERS: %s\nREQ_BODY:%s" % (
             request_url,
-            str(response.status_code),
+            text_type(response.status_code),
             UrlUtils.beautify_response(response),
-            str(response_headers),
-            str(request_body)[:1000]
+            text_type(response_headers),
+            repr(request_body)[:1000]
         )
         if reason:
             msg += "\nBecause of %s" % reason

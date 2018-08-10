@@ -11,3 +11,5 @@ run3.py
 .cache/v/cache/lastfailed
 pylint_report.txt
 .pypirc
+.tox/*
+.pytest_cache/*
