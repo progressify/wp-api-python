@@ -208,7 +208,15 @@ class UrlUtils(object):
     @staticmethod
     def beautify_response(response):
         """ Returns a beautified response in the default locale """
-        return BeautifulSoup(response.text, 'lxml').prettify().encode(errors='backslashreplace')
+        content_type = 'html'
+        try:
+            content_type = getattr(response, 'headers', {}).get('Content-Type', content_type)
+        except:
+            pass
+        if 'html' in content_type.lower():
+            return BeautifulSoup(response.text, 'lxml').prettify().encode(errors='backslashreplace')
+        else:
+            return response.text
 
     @classmethod
     def remove_port(cls, url):
