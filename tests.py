@@ -858,18 +858,18 @@ class OAuth3LegTestcases(unittest.TestCase):
             'YYYYYYYYYYYY'
         )
 
-@unittest.skipIf(platform.uname()[1] != "Derwents-MBP.lan", "should only work on my machine")
+@unittest.skipIf(platform.uname()[1] != "Derwents-MacBook-Pro.local", "should only work on my machine")
 class WCApiTestCasesBase(unittest.TestCase):
     """ Base class for WC API Test cases """
     def setUp(self):
         Auth.force_timestamp = CURRENT_TIMESTAMP
         Auth.force_nonce = SHITTY_NONCE
         self.api_params = {
-            'url':'http://localhost:18080/wptest/',
+            'url':'http://derwent-mac.ddns.me:18080/wptest/',
             'api':'wc-api',
             'version':'v3',
-            'consumer_key':'ck_e1dd4a9c85f49b9685f7964a154eecb29af39d5a',
-            'consumer_secret':'cs_8ef3e5d21f8a0c28cd7bc4643e92111a0326b6b1',
+            'consumer_key':'ck_6f1cf1a528fd94ec3d18a8af91eea94cfc8233bf',
+            'consumer_secret':'cs_d9055bdeff59dc992105064f4607de0ffa05ca5e',
         }
 
 class WCApiTestCasesLegacy(WCApiTestCasesBase):
@@ -975,14 +975,14 @@ class WCApiTestCases3Leg(WCApiTestCases):
     """ Tests for New wp-json/wc/v2 API with 3-leg """
     oauth1a_3leg = True
 
-@unittest.skipIf(platform.uname()[1] != "Derwents-MBP.lan", "should only work on my machine")
+@unittest.skipIf(platform.uname()[1] != "Derwents-MacBook-Pro.local", "should only work on my machine")
 class WPAPITestCasesBase(unittest.TestCase):
     def setUp(self):
         Auth.force_timestamp = CURRENT_TIMESTAMP
         Auth.force_nonce = SHITTY_NONCE
         self.creds_store = '~/wc-api-creds-test.json'
         self.api_params = {
-            'url':'http://localhost:18080/wptest/',
+            'url':'http://derwent-mac.ddns.me:18080/wptest/',
             'api':'wp-json',
             'version':'wp/v2',
             'consumer_key':'tYG1tAoqjBEM',

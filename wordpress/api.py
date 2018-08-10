@@ -100,21 +100,24 @@ class API(object):
             if hasattr(response.request, 'body'):
                 request_body = response.request.body
 
+        try_hostname_mismatch = False
+
         if isinstance(response_json, dict) and ('code' in response_json or 'message' in response_json):
             reason = u" - ".join([
                 unicode(response_json.get(key)) for key in ['code', 'message', 'data'] \
                 if key in response_json
             ])
+            code = response_json.get('code')
 
-            if 'code' == 'rest_user_invalid_email':
+            if code == 'rest_user_invalid_email':
                 remedy = "Try checking the email %s doesn't already exist" % \
                 request_body.get('email')
 
-            elif 'code' == 'json_oauth1_consumer_mismatch':
+            elif code == 'json_oauth1_consumer_mismatch':
                 remedy = "Try deleting the cached credentials at %s" % \
                 self.auth.creds_store
 
-            elif 'code' == 'woocommerce_rest_cannot_view':
+            elif code == 'woocommerce_rest_cannot_view':
                 if not self.auth.query_string_auth:
                     remedy = "Try enabling query_string_auth"
                 else:
@@ -131,14 +134,21 @@ class API(object):
                         " - Try enabling HTTPS and using basic authentication\n"
                     )
 
+            elif code == 'woocommerce_rest_authentication_error':
+                try_hostname_mismatch = True
+
         response_headers = {}
         if hasattr(response, 'headers'):
             response_headers = response.headers
 
-        if not reason:
+        if not reason or try_hostname_mismatch:
             requester_api_url = self.requester.api_url
+            links = []
             if hasattr(response, 'links') and response.links:
                 links = response.links
+            elif 'Link' in response_headers:
+                links = [response_headers['Link']]
+            if links:
                 first_link_key = list(links)[0]
                 header_api_url = links[first_link_key].get('url', '')
                 if header_api_url:
