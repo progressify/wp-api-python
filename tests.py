@@ -858,18 +858,17 @@ class OAuth3LegTestcases(unittest.TestCase):
             'YYYYYYYYYYYY'
         )
 
-@unittest.skipIf(platform.uname()[1] != "Derwents-MacBook-Pro.local", "should only work on my machine")
 class WCApiTestCasesBase(unittest.TestCase):
     """ Base class for WC API Test cases """
     def setUp(self):
         Auth.force_timestamp = CURRENT_TIMESTAMP
         Auth.force_nonce = SHITTY_NONCE
         self.api_params = {
-            'url':'http://derwent-mac.ddns.me:18080/wptest/',
+            'url':'http://localhost:8083/',
             'api':'wc-api',
             'version':'v3',
-            'consumer_key':'ck_6f1cf1a528fd94ec3d18a8af91eea94cfc8233bf',
-            'consumer_secret':'cs_d9055bdeff59dc992105064f4607de0ffa05ca5e',
+            'consumer_key':'ck_659f6994ae88fed68897f9977298b0e19947979a',
+            'consumer_secret':'cs_9421d39290f966172fef64ae18784a2dc7b20976',
         }
 
 class WCApiTestCasesLegacy(WCApiTestCasesBase):
@@ -898,7 +897,7 @@ class WCApiTestCasesLegacy(WCApiTestCasesBase):
 
         response_obj = response.json()
         self.assertIn('products', response_obj)
-        self.assertEqual(len(response_obj['products']), 10)
+        self.assertEqual(len(response_obj['products']), 8)
         # print "test_ApiGenWithSimpleQuery", response_obj
 
     def test_APIGetWithComplexQuery(self):

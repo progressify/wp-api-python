@@ -1,0 +1,34 @@
+version: "2"
+services: 
+  db:
+    image: mariadb
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+      MYSQL_DATABASE: "wordpress"
+      MYSQL_ROOT_PASSWORD: ""
+    ports:
+      - "8081:3306"
+  woocommerce:
+    image: derwentx/woocommerce-api
+    environment:
+      WORDPRESS_DB_HOST: "db"
+      WORDPRESS_DB_NAME: "wordpress"
+      WORDPRESS_DB_PASSWORD: ""
+      WORDPRESS_DB_USER: "root"
+      WORDPRESS_SITE_URL: "http://localhost:8083/"
+      WORDPRESS_SITE_TITLE: "API Test"
+      WORDPRESS_ADMIN_USER: "admin"
+      WORDPRESS_ADMIN_PASSWORD: "admin"
+      WORDPRESS_ADMIN_EMAIL: "admin@example.com"
+      WORDPRESS_DEBUG: 1
+      WOOCOMMERCE_TEST_DATA: 1
+      WOOCOMMERCE_CONSUMER_KEY: "ck_659f6994ae88fed68897f9977298b0e19947979a"
+      WOOCOMMERCE_CONSUMER_SECRET: "cs_9421d39290f966172fef64ae18784a2dc7b20976"
+    links: 
+      - db:mysql
+    ports:
+      - "8083:80"
+    depends_on:
+      - db
+    command: apache2-foreground
+

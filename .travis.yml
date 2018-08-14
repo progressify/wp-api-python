@@ -1,4 +1,7 @@
 language: python
+sudo: required
+services: 
+  - docker
 python:
   - "2.7"
   - "3.4"
@@ -7,6 +10,7 @@ python:
 install:
   - pip install .
   - pip install -r requirements-test.txt
+  - docker-compose up
 # command to run tests
 script:
   - pytest
