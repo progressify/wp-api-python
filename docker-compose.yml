@@ -31,4 +31,11 @@ services:
     depends_on:
       - db
     command: apache2-foreground
+    # command: sh
+    # command: ["docker-entrypoint-woocommerce.sh", "bash"]
+    # command: "apache2"
+    # command: "sh"
+    # command: "bash"
+    # command: ["docker-entrypoint-woocommerce.sh", "apache2-foreground", "&"]
+
 
