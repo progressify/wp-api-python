@@ -10,7 +10,7 @@ python:
 install:
   - pip install .
   - pip install -r requirements-test.txt
-  - docker-compose up
+  - docker-compose up &
 # command to run tests
 script:
   - pytest
