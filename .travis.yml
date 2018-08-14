@@ -8,10 +8,10 @@ python:
   - "nightly"
 # command to install dependencies
 install:
-  - docker-compose up &
+  - docker-compose up -d
   - pip install .
   - pip install -r requirements-test.txt
-  - sleep 30
+  - docker exec -it wpapipython_woocommerce_1 bash -c 'until [ -f .done ]; do sleep 1; done; echo "complete"'
 # command to run tests
 script:
   - pytest
