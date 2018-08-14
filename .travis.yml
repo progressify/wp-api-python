@@ -8,9 +8,9 @@ python:
   - "nightly"
 # command to install dependencies
 install:
+  - docker-compose up &
   - pip install .
   - pip install -r requirements-test.txt
-  - docker-compose up &
   - sleep 30
 # command to run tests
 script:
