@@ -8,9 +8,9 @@ __title__ = "wordpress-api"
 
 # from requests import request
 import logging
-from six import text_type, u
 from json import dumps as jsonencode
 
+from six import text_type, binary_type
 from wordpress.auth import BasicAuth, OAuth, OAuth_3Leg
 from wordpress.helpers import StrUtils, UrlUtils
 from wordpress.transport import API_Requests_Wrapper
@@ -188,7 +188,16 @@ class API(object):
         content_type = kwargs.get('headers', {}).get('content-type', 'application/json')
 
         if data is not None and content_type.startswith('application/json'):
-            data = jsonencode(data, ensure_ascii=False).encode('utf-8')
+            data = jsonencode(data, ensure_ascii=False)
+            # enforce utf-8 encoded binary
+            if isinstance(data, binary_type):
+                try:
+                    data = data.decode('utf-8')
+                except UnicodeDecodeError:
+                    data = data.decode('latin-1')
+            if isinstance(data, text_type):
+                data = data.encode('utf-8')
+
 
         response = self.requester.request(
             method=method,

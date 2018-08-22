@@ -2,24 +2,25 @@
 import functools
 import logging
 import pdb
+import platform
 import random
 import sys
 import traceback
+import six
 import unittest
-import platform
 from collections import OrderedDict
 from copy import copy
-from time import time
 from tempfile import mkstemp
+from time import time
 
 import wordpress
+from httmock import HTTMock, all_requests, urlmatch
+from six import text_type, u
 from wordpress import __default_api__, __default_api_version__, auth
 from wordpress.api import API
-from wordpress.auth import OAuth, Auth
+from wordpress.auth import Auth, OAuth
 from wordpress.helpers import SeqUtils, StrUtils, UrlUtils
 from wordpress.transport import API_Requests_Wrapper
-
-from httmock import HTTMock, all_requests, urlmatch
 
 try:
     from urllib.parse import urlencode, quote, unquote, parse_qs, parse_qsl, urlparse, urlunparse
@@ -121,6 +122,7 @@ class WordpressTestCase(unittest.TestCase):
             # call requests
             status = api.get("products").status_code
         self.assertEqual(status, 200)
+
 
     def test_get(self):
         """ Test GET requests """
@@ -291,8 +293,8 @@ class HelperTestcase(unittest.TestCase):
         )
         result = UrlUtils.get_query_singular(self.test_url, 'filter[limit]')
         self.assertEqual(
-            str(result),
-            str(2)
+            text_type(result),
+            text_type(2)
         )
 
     def test_url_set_query_singular(self):
@@ -676,8 +678,8 @@ class OAuthTestcases(unittest.TestCase):
             '%s&' % self.rfc1_consumer_secret
         )
         self.assertEqual(
-            str(rfc1_request_signature),
-            str(self.rfc1_request_signature)
+            text_type(rfc1_request_signature),
+            text_type(self.rfc1_request_signature)
         )
 
         # TEST WITH RFC EXAMPLE 3 DATA
@@ -778,7 +780,6 @@ class OAuth3LegTestcases(unittest.TestCase):
             "%s&%s" % (self.consumer_secret, oauth_token_secret)
         )
         self.assertEqual(type(key), type(""))
-
 
     def test_auth_discovery(self):
 
@@ -921,14 +922,15 @@ class WCApiTestCasesLegacy(WCApiTestCasesBase):
         original_title = first_product['title']
         product_id = first_product['id']
 
-        nonce = str(random.random())
-        response = wcapi.put('products/%s?filter%%5Blimit%%5D=5' % (product_id), {"product":{"title":str(nonce)}})
+        nonce = b"%f" % (random.random())
+        response = wcapi.put('products/%s?filter%%5Blimit%%5D=5' % (product_id), {"product":{"title":text_type(nonce)}})
         request_params = UrlUtils.get_query_dict_singular(response.request.url)
         response_obj = response.json()
-        self.assertEqual(response_obj['product']['title'], str(nonce))
-        self.assertEqual(request_params['filter[limit]'], str(5))
+        self.assertEqual(response_obj['product']['title'], text_type(nonce))
+        self.assertEqual(request_params['filter[limit]'], text_type(5))
 
         wcapi.put('products/%s' % (product_id), {"product":{"title":original_title}})
+
 
 class WCApiTestCases(WCApiTestCasesBase):
     oauth1a_3leg = False
@@ -960,14 +962,68 @@ class WCApiTestCases(WCApiTestCasesBase):
         original_title = first_product['name']
         product_id = first_product['id']
 
-        nonce = str(random.random())
-        response = wcapi.put('products/%s?page=2&per_page=5' % (product_id), {"name":str(nonce)})
+        nonce = b"%f" % (random.random())
+        response = wcapi.put('products/%s?page=2&per_page=5' % (product_id), {"name":text_type(nonce)})
         request_params = UrlUtils.get_query_dict_singular(response.request.url)
         response_obj = response.json()
-        self.assertEqual(response_obj['name'], str(nonce))
+        self.assertEqual(response_obj['name'], text_type(nonce))
         self.assertEqual(request_params['per_page'], '5')
 
         wcapi.put('products/%s' % (product_id), {"name":original_title})
+
+    def test_APIPostWithLatin1Query(self):
+        wcapi = API(**self.api_params)
+        nonce = u"%f\u00ae" % random.random()
+
+        data = {
+            "name": nonce.encode('latin-1'),
+            "type": "simple",
+        }
+
+        if six.PY2:
+            response = wcapi.post('products', data)
+            response_obj = response.json()
+            product_id = response_obj.get('id')
+            self.assertEqual(response_obj.get('name'), nonce)
+            wcapi.delete('products/%s' % product_id)
+            return
+        with self.assertRaises(TypeError):
+            response = wcapi.post('products', data)
+
+    def test_APIPostWithUTF8Query(self):
+        wcapi = API(**self.api_params)
+        nonce = u"%f\u00ae" % random.random()
+
+        data = {
+            "name": nonce.encode('utf8'),
+            "type": "simple",
+        }
+
+        if six.PY2:
+            response = wcapi.post('products', data)
+            response_obj = response.json()
+            product_id = response_obj.get('id')
+            self.assertEqual(response_obj.get('name'), nonce)
+            wcapi.delete('products/%s' % product_id)
+            return
+        with self.assertRaises(TypeError):
+            response = wcapi.post('products', data)
+
+
+    def test_APIPostWithUnicodeQuery(self):
+        wcapi = API(**self.api_params)
+        nonce = u"%f\u00ae" % random.random()
+
+        data = {
+            "name": nonce,
+            "type": "simple",
+        }
+
+        response = wcapi.post('products', data)
+        response_obj = response.json()
+        product_id = response_obj.get('id')
+        self.assertEqual(response_obj.get('name'), nonce)
+        wcapi.delete('products/%s' % product_id)
 
 @unittest.skip("these simply don't work for some reason")
 class WCApiTestCases3Leg(WCApiTestCases):
