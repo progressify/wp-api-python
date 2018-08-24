@@ -16,6 +16,7 @@ from hmac import new as HMAC
 from random import randint
 from time import time
 from pprint import pformat
+from wordpress import __version__
 
 # import webbrowser
 import requests
