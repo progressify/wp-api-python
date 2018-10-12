@@ -16,6 +16,7 @@ from hmac import new as HMAC
 from random import randint
 from time import time
 from pprint import pformat
+from wordpress import __version__
 
 # import webbrowser
 import requests
@@ -464,6 +465,7 @@ class OAuth_3Leg(OAuth):
 
         # self.requester.get(authorize_url)
         authorize_session = requests.Session()
+        authorize_session.headers.update({'User-Agent': "Wordpress API Client-Python/%s" % __version__})
 
         login_form_response = authorize_session.get(authorize_url)
         login_form_params = {
