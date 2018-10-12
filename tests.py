@@ -1037,14 +1037,14 @@ class WPAPITestCasesBase(unittest.TestCase):
         Auth.force_nonce = SHITTY_NONCE
         self.creds_store = '~/wc-api-creds-test.json'
         self.api_params = {
-            'url':'http://derwent-mac.ddns.me:18080/wptest/',
+            'url':'http://localhost:8083/',
             'api':'wp-json',
             'version':'wp/v2',
             'consumer_key':'tYG1tAoqjBEM',
             'consumer_secret':'s91fvylVrqChwzzDbEJHEWyySYtAmlIsqqYdjka1KyVDdAyB',
             'callback':'http://127.0.0.1/oauth1_callback',
-            'wp_user':'wptest',
-            'wp_pass':'gZ*gZk#v0t5$j#NQ@9',
+            'wp_user':'admin',
+            'wp_pass':'admin',
             'oauth1a_3leg':True,
         }
 
@@ -1055,6 +1055,13 @@ class WPAPITestCasesBase(unittest.TestCase):
         self.assertIn(response.status_code, [200,201])
         response_obj = response.json()
         self.assertEqual(response_obj['name'], self.api_params['wp_user'])
+
+    def test_APIGetWithSimpleQuery(self):
+        response = self.wpapi.get('media?page=2&per_page=2')
+        self.assertIn(response.status_code, [200,201])
+
+        response_obj = response.json()
+        self.assertEqual(len(response_obj), 2)
 
 class WPAPITestCasesBasic(WPAPITestCasesBase):
     def setUp(self):
@@ -1098,15 +1105,6 @@ class WPAPITestCases3leg(WPAPITestCasesBase):
         })
         self.wpapi = API(**self.api_params)
         self.wpapi.auth.clear_stored_creds()
-
-    def test_APIGetWithSimpleQuery(self):
-        response = self.wpapi.get('media?page=2&per_page=2')
-        # print UrlUtils.beautify_response(response)
-        self.assertIn(response.status_code, [200,201])
-
-        response_obj = response.json()
-        self.assertEqual(len(response_obj), 2)
-        # print "test_ApiGenWithSimpleQuery", response_obj
 
 
 if __name__ == '__main__':
