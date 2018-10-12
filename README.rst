@@ -1,7 +1,8 @@
 Wordpress API - Python Client
 ===============================
 
-[![Build Status](https://travis-ci.org/derwentx/wp-api-python.svg?branch=master)](https://travis-ci.org/derwentx/wp-api-python)
+.. image:: https://travis-ci.org/derwentx/wp-api-python.svg?branch=master
+    :target: https://travis-ci.org/derwentx/wp-api-python
 
 A Python wrapper for the Wordpress and WooCommerce REST APIs with oAuth1a 3leg support.
 
