@@ -40,6 +40,7 @@ setup(
     platforms=['any'],
     install_requires=[
         "requests",
+        "requests_oauthlib",
         "ordereddict",
         "beautifulsoup4",
         'lxml'
