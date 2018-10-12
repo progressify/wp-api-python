@@ -10,7 +10,7 @@ __title__ = "wordpress-api"
 import logging
 from json import dumps as jsonencode
 
-from six import text_type, binary_type
+from six import binary_type, text_type
 from wordpress.auth import BasicAuth, OAuth, OAuth_3Leg
 from wordpress.helpers import StrUtils, UrlUtils
 from wordpress.transport import API_Requests_Wrapper
@@ -105,7 +105,7 @@ class API(object):
 
         if isinstance(response_json, dict) and ('code' in response_json or 'message' in response_json):
             reason = u" - ".join([
-                unicode(response_json.get(key)) for key in ['code', 'message', 'data'] \
+                text_type(response_json.get(key)) for key in ['code', 'message', 'data'] \
                 if key in response_json
             ])
             code = response_json.get('code')
