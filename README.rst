@@ -250,7 +250,8 @@ Upload an image
         'content-disposition': 'attachment; filename=%s' % filename,
         'content-type': 'image/%s' % extension
     }
-    return wcapi.post(self.endpoint_singular, data, headers=headers)
+    endpoint = "/media"
+    return wpapi.post(endpoint, data, headers=headers)
 
 
 Response
