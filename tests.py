@@ -1050,19 +1050,34 @@ class WPAPITestCasesBase(unittest.TestCase):
 
     # @debug_on()
     def test_APIGet(self):
-        self.wpapi = API(**self.api_params)
         response = self.wpapi.get('users/me')
         self.assertIn(response.status_code, [200,201])
         response_obj = response.json()
         self.assertEqual(response_obj['name'], self.api_params['wp_user'])
 
     def test_APIGetWithSimpleQuery(self):
-        self.wpapi = API(**self.api_params)
         response = self.wpapi.get('pages?page=2&per_page=2')
         self.assertIn(response.status_code, [200,201])
 
         response_obj = response.json()
         self.assertEqual(len(response_obj), 2)
+
+    def test_APIPostData(self):
+        nonce = u"%f\u00ae" % random.random()
+
+        content = "api test post"
+
+        data = {
+            "title": nonce,
+            "content": content,
+            "excerpt": content
+        }
+
+        response = self.wpapi.post('posts', data)
+        response_obj = response.json()
+        post_id = response_obj.get('id')
+        self.assertEqual(response_obj.get('title').get('raw'), nonce)
+        self.wpapi.delete('posts/%s' % post_id)
 
 
 class WPAPITestCasesBasic(WPAPITestCasesBase):
