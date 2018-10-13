@@ -94,6 +94,13 @@ class BasicAuth(Auth):
         if not self.query_string_auth:
             return HTTPBasicAuth(self.consumer_key, self.consumer_secret)
 
+class NoAuth(Auth):
+    """
+    Just a dummy Auth object to allow header based
+    authorization per request
+    """
+    def get_auth_url(self, endpoint_url, method, **kwargs):
+        return endpoint_url
 
 class OAuth(Auth):
     """ Signs string with oauth consumer_key and consumer_secret """

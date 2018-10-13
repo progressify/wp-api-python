@@ -11,7 +11,7 @@ import logging
 from json import dumps as jsonencode
 
 from six import binary_type, text_type
-from wordpress.auth import BasicAuth, OAuth, OAuth_3Leg
+from wordpress.auth import BasicAuth, OAuth, OAuth_3Leg, NoAuth
 from wordpress.helpers import StrUtils, UrlUtils
 from wordpress.transport import API_Requests_Wrapper
 
@@ -35,6 +35,8 @@ class API(object):
             auth_class = BasicAuth
         elif kwargs.get('oauth1a_3leg'):
             auth_class = OAuth_3Leg
+        elif kwargs.get('no_auth'):
+            auth_class = NoAuth
 
         if kwargs.get('version', '').startswith('wc') and kwargs.get('oauth1a_3leg'):
             self.logger.warn("WooCommerce JSON Api does not seem to support 3leg")
@@ -170,10 +172,10 @@ class API(object):
             text_type(response.status_code),
             UrlUtils.beautify_response(response),
             text_type(response_headers),
-            repr(request_body)[:1000]
+            StrUtils.to_binary(request_body)[:1000]
         )
         if reason:
-            msg += "\nBecause of %s" % reason
+            msg += "\nBecause of %s" % StrUtils.to_binary(reason)
         if remedy:
             msg += "\n%s" % remedy
         raise UserWarning(msg)

@@ -1,5 +1,7 @@
 language: python
 sudo: required
+env:
+  - CODECOV_TOKEN: "da32b183-0d8b-4dc2-9bf9-e1743a39b2c8"
 services:
   - docker
 python:
@@ -14,4 +16,6 @@ install:
   - docker exec -it wpapipython_woocommerce_1 bash -c 'until [ -f .done ]; do sleep 1; done; echo "complete"'
 # command to run tests
 script:
-  - pytest
+  - py.test --cov=wordpress tests.py
+after_success:
+  - codecov

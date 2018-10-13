@@ -1,5 +1,7 @@
 -r requirements.txt
 httmock==1.2.3
-nose==1.3.7
 six
 pytest
+pytest-cov==2.5.1
+coverage
+codecov
