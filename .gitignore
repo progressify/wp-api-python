@@ -14,3 +14,21 @@ pylint_report.txt
 .tox/*
 .pytest_cache/*
 .python-version
+ # Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+ # C extensions
+*.so
+ # Distribution / packaging
+.Python
+ # Unit test / coverage reports
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
