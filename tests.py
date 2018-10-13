@@ -1030,23 +1030,23 @@ class WCApiTestCases3Leg(WCApiTestCases):
     """ Tests for New wp-json/wc/v2 API with 3-leg """
     oauth1a_3leg = True
 
-@unittest.skipIf(platform.uname()[1] != "Derwents-MacBook-Pro.local", "should only work on my machine")
 class WPAPITestCasesBase(unittest.TestCase):
+    api_params = {
+        'url':'http://localhost:8083/',
+        'api':'wp-json',
+        'version':'wp/v2',
+        'consumer_key':'tYG1tAoqjBEM',
+        'consumer_secret':'s91fvylVrqChwzzDbEJHEWyySYtAmlIsqqYdjka1KyVDdAyB',
+        'callback':'http://127.0.0.1/oauth1_callback',
+        'wp_user':'admin',
+        'wp_pass':'admin',
+        'oauth1a_3leg':True,
+    }
+
     def setUp(self):
         Auth.force_timestamp = CURRENT_TIMESTAMP
         Auth.force_nonce = SHITTY_NONCE
-        self.creds_store = '~/wc-api-creds-test.json'
-        self.api_params = {
-            'url':'http://localhost:8083/',
-            'api':'wp-json',
-            'version':'wp/v2',
-            'consumer_key':'tYG1tAoqjBEM',
-            'consumer_secret':'s91fvylVrqChwzzDbEJHEWyySYtAmlIsqqYdjka1KyVDdAyB',
-            'callback':'http://127.0.0.1/oauth1_callback',
-            'wp_user':'admin',
-            'wp_pass':'admin',
-            'oauth1a_3leg':True,
-        }
+        self.wpapi = API(**self.api_params)
 
     # @debug_on()
     def test_APIGet(self):
@@ -1057,53 +1057,32 @@ class WPAPITestCasesBase(unittest.TestCase):
         self.assertEqual(response_obj['name'], self.api_params['wp_user'])
 
     def test_APIGetWithSimpleQuery(self):
-        response = self.wpapi.get('media?page=2&per_page=2')
+        self.wpapi = API(**self.api_params)
+        response = self.wpapi.get('pages?page=2&per_page=2')
         self.assertIn(response.status_code, [200,201])
 
         response_obj = response.json()
         self.assertEqual(len(response_obj), 2)
 
-class WPAPITestCasesBasic(WPAPITestCasesBase):
-    def setUp(self):
-        super(WPAPITestCasesBasic, self).setUp()
-        self.api_params.update({
-            'user_auth': True,
-            'basic_auth': True,
-            'query_string_auth': False,
-        })
-        self.wpapi = API(**self.api_params)
 
-# class WPAPITestCasesBasicV1(WPAPITestCasesBase):
-#     def setUp(self):
-#         super(WPAPITestCasesBasicV1, self).setUp()
-#         self.api_params.update({
-#             'user_auth': True,
-#             'basic_auth': True,
-#             'query_string_auth': False,
-#             'version': 'wp/v1'
-#         })
-#         self.wpapi = API(**self.api_params)
-#
-#     def test_get_endpoint_url(self):
-#         self.api_params.update({
-#             'version': ''
-#         })
-#         self.wpapi = API(**self.api_params)
-#         endpoint_url = self.wpapi.requester.endpoint_url('')
-#         print endpoint_url
-#
-#     def test_APIGetWithSimpleQuery(self):
-#         response = self.wpapi.get('posts')
-#         self.assertIn(response.status_code, [200,201])
+class WPAPITestCasesBasic(WPAPITestCasesBase):
+    api_params = dict(**WPAPITestCasesBase.api_params)
+    api_params.update({
+        'user_auth': True,
+        'basic_auth': True,
+        'query_string_auth': False,
+    })
 
 
 class WPAPITestCases3leg(WPAPITestCasesBase):
+
+    api_params = dict(**WPAPITestCasesBase.api_params)
+    api_params.update({
+        'creds_store': '~/wc-api-creds-test.json',
+    })
+
     def setUp(self):
         super(WPAPITestCases3leg, self).setUp()
-        self.api_params.update({
-            'creds_store': self.creds_store,
-        })
-        self.wpapi = API(**self.api_params)
         self.wpapi.auth.clear_stored_creds()
 
 
