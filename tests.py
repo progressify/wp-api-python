@@ -599,19 +599,19 @@ class OAuthTestcases(unittest.TestCase):
 
     def test_get_sign_key(self):
         self.assertEqual(
-            self.wcapi.auth.get_sign_key(self.consumer_secret),
-            "%s&" % self.consumer_secret
+            StrUtils.to_binary(self.wcapi.auth.get_sign_key(self.consumer_secret)),
+            StrUtils.to_binary("%s&" % self.consumer_secret)
         )
 
         self.assertEqual(
-            self.wcapi.auth.get_sign_key(self.twitter_consumer_secret, self.twitter_token_secret),
-            self.twitter_signing_key
+            StrUtils.to_binary(self.wcapi.auth.get_sign_key(self.twitter_consumer_secret, self.twitter_token_secret)),
+            StrUtils.to_binary(self.twitter_signing_key)
         )
 
     def test_flatten_params(self):
         self.assertEqual(
-            UrlUtils.flatten_params(self.twitter_params_raw),
-            self.twitter_param_string
+            StrUtils.to_binary(UrlUtils.flatten_params(self.twitter_params_raw)),
+            StrUtils.to_binary(self.twitter_param_string)
         )
 
     def test_sorted_params(self):
@@ -776,10 +776,9 @@ class OAuth3LegTestcases(unittest.TestCase):
 
         key = self.api.auth.get_sign_key(self.consumer_secret, oauth_token_secret)
         self.assertEqual(
-            key,
-            "%s&%s" % (self.consumer_secret, oauth_token_secret)
+            StrUtils.to_binary(key),
+            StrUtils.to_binary("%s&%s" % (self.consumer_secret, oauth_token_secret))
         )
-        self.assertEqual(type(key), type(""))
 
     def test_auth_discovery(self):
 
@@ -1078,6 +1077,20 @@ class WPAPITestCasesBase(unittest.TestCase):
         post_id = response_obj.get('id')
         self.assertEqual(response_obj.get('title').get('raw'), nonce)
         self.wpapi.delete('posts/%s' % post_id)
+
+    def test_APIBadData(self):
+        """
+        No excerpt so should fail to be created.
+        """
+        nonce = u"%f\u00ae" % random.random()
+
+        content = "api test post"
+
+        data = {
+        }
+
+        with self.assertRaises(UserWarning):
+            response = self.wpapi.post('posts', data)
 
 
 class WPAPITestCasesBasic(WPAPITestCasesBase):

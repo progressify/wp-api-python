@@ -90,16 +90,13 @@ class API_Requests_Wrapper(object):
             headers,
             kwargs.get('headers', {})
         )
-        timeout = self.timeout
-        if 'timeout' in kwargs:
-            timeout = kwargs['timeout']
 
         request_kwargs = dict(
             method=method,
             url=url,
             headers=headers,
             verify=self.verify_ssl,
-            timeout=timeout,
+            timeout=kwargs.get('timeout', self.timeout),
         )
         request_kwargs.update(kwargs)
         if auth is not None:
@@ -129,10 +126,6 @@ class API_Requests_Wrapper(object):
         if hasattr(response, 'links') and response.links:
             response_links = response.links
         self.logger.debug("response_links:\n%s" % pformat(response_links))
-
-
-
-
 
         return response
 

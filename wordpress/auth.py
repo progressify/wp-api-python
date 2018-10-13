@@ -13,18 +13,18 @@ import logging
 import os
 from hashlib import sha1, sha256
 from hmac import new as HMAC
+from pprint import pformat
 from random import randint
 from time import time
-from pprint import pformat
-from wordpress import __version__
 
 # import webbrowser
 import requests
 from requests.auth import HTTPBasicAuth
-from requests_oauthlib import OAuth1
 
 from bs4 import BeautifulSoup
-from wordpress.helpers import UrlUtils
+from requests_oauthlib import OAuth1
+from wordpress import __version__
+from .helpers import UrlUtils, StrUtils
 
 try:
     from urllib.parse import urlencode, quote, unquote, parse_qs, parse_qsl, urlparse, urlunparse
@@ -123,7 +123,7 @@ class OAuth(Auth):
             # special conditions for wc-api v1-2
             key = consumer_secret
         else:
-            key = "%s&%s" % (consumer_secret, token_secret)
+            key = StrUtils.to_binary("%s&%s" % (consumer_secret, token_secret))
         return key
 
     def add_params_sign(self, method, url, params, sign_key=None, **kwargs):
@@ -211,8 +211,8 @@ class OAuth(Auth):
         # print "\nstring_to_sign: %s" % repr(string_to_sign)
         # print "\nkey: %s" % repr(key)
         sig = HMAC(
-            bytes(key.encode('utf-8')),
-            bytes(string_to_sign.encode('utf-8')),
+            StrUtils.to_binary(key),
+            StrUtils.to_binary(string_to_sign),
             hmac_mod
         )
         sig_b64 = binascii.b2a_base64(sig.digest())[:-1]
@@ -332,7 +332,7 @@ class OAuth_3Leg(OAuth):
         if not has_authentication_resources:
             raise UserWarning(
                 (
-                    "Resopnse does not include location of authentication resources.\n"
+                    "Response does not include location of authentication resources.\n"
                     "Resopnse: %s\n%s\n"
                     "Please check you have configured the Wordpress OAuth1 plugin correctly."
                 ) % (response, response.text[:500])
@@ -548,7 +548,7 @@ class OAuth_3Leg(OAuth):
             creds['access_token_secret'] = self.access_token_secret
         if creds:
             with open(self.creds_store, 'w+') as creds_store_file:
-                json.dump(creds, creds_store_file, ensure_ascii=False)
+                StrUtils.to_binary(json.dump(creds, creds_store_file, ensure_ascii=False))
 
     def retrieve_access_creds(self):
         """ retrieve the access_token and access_token_secret stored locally. """

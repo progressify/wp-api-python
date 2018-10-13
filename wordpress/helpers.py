@@ -10,6 +10,8 @@ import re
 
 import posixpath
 
+from six import text_type, binary_type
+
 try:
     from urllib.parse import urlencode, quote, unquote, parse_qs, parse_qsl, urlparse, urlunparse
     from urllib.parse import ParseResult as URLParseResult
@@ -45,6 +47,20 @@ class StrUtils(object):
     def eviscerate(cls, *args, **kwargs):
         return cls.remove_tail(*args, **kwargs)
 
+    @classmethod
+    def to_binary(cls, string, encoding='utf8', errors='backslashreplace'):
+        if isinstance(string, binary_type):
+            try:
+                string = string.decode('utf8')
+            except UnicodeDecodeError:
+                string = string.decode('latin-1')
+        if not isinstance(string, text_type):
+            string = text_type(string)
+        return string.encode(encoding, errors=errors)
+
+    @classmethod
+    def to_binary_ascii(cls, string):
+        return cls.to_binary(string, 'ascii')
 
 class SeqUtils(object):
     @classmethod

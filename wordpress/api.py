@@ -108,7 +108,7 @@ class API(object):
                 text_type(response_json.get(key)) for key in ['code', 'message', 'data'] \
                 if key in response_json
             ])
-            code = response_json.get('code')
+            code = text_type(response_json.get('code'))
 
             if code == 'rest_user_invalid_email':
                 remedy = "Try checking the email %s doesn't already exist" % \
@@ -190,13 +190,7 @@ class API(object):
         if data is not None and content_type.startswith('application/json'):
             data = jsonencode(data, ensure_ascii=False)
             # enforce utf-8 encoded binary
-            if isinstance(data, binary_type):
-                try:
-                    data = data.decode('utf-8')
-                except UnicodeDecodeError:
-                    data = data.decode('latin-1')
-            if isinstance(data, text_type):
-                data = data.encode('utf-8')
+            data = StrUtils.to_binary(data, encoding='utf8')
 
 
         response = self.requester.request(
