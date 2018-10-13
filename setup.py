@@ -43,7 +43,8 @@ setup(
         "requests_oauthlib",
         "ordereddict",
         "beautifulsoup4",
-        'lxml'
+        'lxml',
+        'six',
     ],
     setup_requires=[
         'pytest-runner',

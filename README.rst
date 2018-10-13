@@ -63,12 +63,21 @@ Download this repo and use setuptools to install the package
 Testing
 -------
 
-If you have installed from source, then you can test with unittest:
+Some of the tests make API calls to a dockerized woocommerce container. Don't
+worry! It's really simple to set up. You just need to install docker and run
+
+.. code-block:: bash
+
+    docker-compose up -d
+    # this just waits until the docker container is set up and exits
+    docker exec -it wpapipython_woocommerce_1 bash -c 'until [ -f .done ]; do sleep 1; done; echo "complete"'
+
+Then you can test with:
 
 .. code-block:: bash
 
     pip install -r requirements-test.txt
-    python -m unittest -v tests
+    python setup.py test
 
 Publishing
 ----------
