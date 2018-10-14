@@ -302,6 +302,12 @@ According the the [documentation](https://developer.wordpress.org/rest-api/refer
 Changelog
 ---------
 
+1.2.8 - 2018/10/13
+~~~~~~~~~~~~~~~~~~
+- Much better python3 support
+- really good tests
+- added NoAuth option for adding custom headers (like JWT)
+
 1.2.7 - 2018/06/18
 ~~~~~~~~~~~~~~~~~~
 - Don't crash on "-1" response from API.
