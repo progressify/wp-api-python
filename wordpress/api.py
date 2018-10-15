@@ -169,11 +169,16 @@ class API(object):
                 if header_api_url:
                     header_api_url = StrUtils.eviscerate(header_api_url, '/')
 
-                if header_api_url and requester_api_url\
-                        and header_api_url != requester_api_url:
-                    reason = "hostname mismatch. %s != %s" % (
-                        header_api_url, requester_api_url
-                    )
+                if (
+                    header_api_url and requester_api_url
+                    and StrUtils.to_text(header_api_url)
+                    != StrUtils.to_text(requester_api_url)
+                ):
+                    reason = "hostname mismatch. %s != %s" % tuple(map(
+                        StrUtils.to_text, [
+                            header_api_url, requester_api_url
+                        ]
+                    ))
                     header_url = StrUtils.eviscerate(header_api_url, '/')
                     header_url = StrUtils.eviscerate(
                         header_url, self.requester.api)
@@ -188,7 +193,7 @@ class API(object):
             response.status_code,
             UrlUtils.beautify_response(response),
             response_headers,
-            request_body[:1000]
+            StrUtils.to_binary(request_body)[:1000]
         ]))
         if reason:
             msg += "\nBecause of %s" % StrUtils.to_binary(reason)
