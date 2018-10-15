@@ -22,12 +22,13 @@ import requests
 from requests.auth import HTTPBasicAuth
 
 from bs4 import BeautifulSoup
-from requests_oauthlib import OAuth1
 from wordpress import __version__
-from .helpers import UrlUtils, StrUtils
+
+from .helpers import StrUtils, UrlUtils
 
 try:
-    from urllib.parse import urlencode, quote, unquote, parse_qs, parse_qsl, urlparse, urlunparse
+    from urllib.parse import (urlencode, quote, unquote, parse_qs, parse_qsl,
+                              urlparse, urlunparse)
     from urllib.parse import ParseResult as URLParseResult
 except ImportError:
     from urllib import urlencode, quote, unquote
@@ -125,7 +126,7 @@ class OAuth(Auth):
         self.force_nonce = kwargs.pop('force_nonce', None)
 
     def get_sign_key(self, consumer_secret, token_secret=None):
-        "gets consumer_secret and turns it into a bytestring suitable for signing"
+        """Get consumer_secret, convert to bytestring suitable for signing."""
         if not consumer_secret:
             raise UserWarning("no consumer_secret provided")
         token_secret = str(token_secret) if token_secret else ''
@@ -138,8 +139,12 @@ class OAuth(Auth):
         return key
 
     def add_params_sign(self, method, url, params, sign_key=None, **kwargs):
-        """ Adds the params to a given url, signs the url with sign_key if provided,
-        otherwise generates sign_key automatically and returns a signed url """
+        """
+        Add the params to a given url.
+
+        Sign the url with sign_key if provided, otherwise generate
+        sign_key automatically and return a signed url.
+        """
         if isinstance(params, dict):
             params = list(params.items())
 
@@ -252,11 +257,17 @@ class OAuth(Auth):
 
 
 class OAuth_3Leg(OAuth):
-    """ Provides 3 legged OAuth1a, mostly based off this: http://www.lexev.org/en/2015/oauth-step-step/"""
+    """
+    Provide 3 legged OAuth1a.
+
+    Mostly based off this: http://www.lexev.org/en/2015/oauth-step-step/
+    """
 
     # oauth_version = '1.0A'
 
-    def __init__(self, requester, consumer_key, consumer_secret, callback, **kwargs):
+    def __init__(
+        self, requester, consumer_key, consumer_secret, callback, **kwargs
+    ):
         super(OAuth_3Leg, self).__init__(
             requester, consumer_key, consumer_secret, **kwargs)
         self.callback = callback
@@ -272,32 +283,44 @@ class OAuth_3Leg(OAuth):
 
     @property
     def authentication(self):
-        """ This is an object holding the authentication links discovered from the API
-        automatically generated if accessed before generated """
+        """
+        Provide authentication links discovered from the API.
+
+        Automatically generated if accessed before generated.
+        """
         if not self._authentication:
             self._authentication = self.discover_auth()
         return self._authentication
 
     @property
     def oauth_verifier(self):
-        """ This is the verifier string used in authentication
-        automatically generated if accessed before generated """
+        """
+        Verifier string used in authentication.
+
+        Automatically generated if accessed before generated.
+        """
         if not self._oauth_verifier:
             self._oauth_verifier = self.get_verifier()
         return self._oauth_verifier
 
     @property
     def request_token(self):
-        """ This is the oauth_token used in requesting an access_token
-        automatically generated if accessed before generated """
+        """
+        OAuth token used in requesting an access_token.
+
+        Automatically generated if accessed before generated.
+        """
         if not self._request_token:
             self.get_request_token()
         return self._request_token
 
     @property
     def access_token(self):
-        """ This is the oauth_token used to sign requests to protected resources
-        automatically generated if accessed before generated """
+        """
+        OAuth token used to sign requests to protected resources.
+
+        Automatically generated if accessed before generated.
+        """
         if not self._access_token and self.creds_store:
             self.retrieve_access_creds()
         if not self._access_token:
@@ -310,7 +333,9 @@ class OAuth_3Leg(OAuth):
             return os.path.expanduser(self._creds_store)
 
     def get_auth_url(self, endpoint_url, method):
-        """ Returns the URL with OAuth params """
+        """
+        Return the URL with OAuth params.
+        """
         assert self.access_token, "need a valid access token for this step"
         assert self.access_token_secret, \
             "need a valid access token secret for this step"
@@ -329,7 +354,9 @@ class OAuth_3Leg(OAuth):
         return self.add_params_sign(method, endpoint_url, params, sign_key)
 
     def discover_auth(self):
-        """ Discovers the location of authentication resourcers from the API"""
+        """
+        Discover the location of authentication resourcers from the API.
+        """
         discovery_url = self.requester.api_url
 
         response = self.requester.request('GET', discovery_url)
@@ -347,9 +374,11 @@ class OAuth_3Leg(OAuth):
         if not has_authentication_resources:
             raise UserWarning(
                 (
-                    "Response does not include location of authentication resources.\n"
+                    "Response does not include location of authentication "
+                    "resources.\n"
                     "Resopnse: %s\n%s\n"
-                    "Please check you have configured the Wordpress OAuth1 plugin correctly."
+                    "Please check you have configured the Wordpress OAuth1 "
+                    "plugin correctly."
                 ) % (response, response.text[:500])
             )
 
@@ -381,13 +410,21 @@ class OAuth_3Leg(OAuth):
         try:
             self._request_token = resp_content['oauth_token'][0]
         except:
-            raise UserWarning("Could not parse request_token in response from %s : %s"
-                              % (repr(response.request.url), UrlUtils.beautify_response(response)))
+            raise UserWarning(
+                "Could not parse request_token in response from %s : %s"
+                % (
+                    repr(response.request.url),
+                    UrlUtils.beautify_response(response))
+                )
         try:
             self.request_token_secret = resp_content['oauth_token_secret'][0]
         except:
-            raise UserWarning("Could not parse request_token_secret in response from %s : %s"
-                              % (repr(response.request.url), UrlUtils.beautify_response(response)))
+            raise UserWarning(
+                "Could not parse request_token_secret in response from %s : %s"
+                % (
+                    repr(response.request.url),
+                    UrlUtils.beautify_response(response))
+                )
 
         return self._request_token, self.request_token_secret
 
@@ -400,7 +437,10 @@ class OAuth_3Leg(OAuth):
             error = login_form_soup.select_one('body#error-page')
             if error and error.stripped_strings:
                 for stripped_string in error.stripped_strings:
-                    if "plase solve this math problem" in stripped_string.lower():
+                    if (
+                        "plase solve this math problem"
+                        in stripped_string.lower()
+                    ):
                         raise UserWarning(
                             "Can't log in if form has capcha ... yet")
                 raise UserWarning(
@@ -439,7 +479,11 @@ class OAuth_3Leg(OAuth):
         form_soup = response_soup.select_one('form#%s' % form_id)
         assert \
             form_soup, "unable to find form with id=%s in %s " \
-            % (form_id, (response_soup.prettify()).encode('ascii', errors='backslashreplace'))
+            % (
+                form_id,
+                (response_soup.prettify()).encode('ascii',
+                                                  errors='backslashreplace')
+            )
         # print "login form: \n", form_soup.prettify()
 
         action = form_soup.get('action')
@@ -467,8 +511,12 @@ class OAuth_3Leg(OAuth):
         return action, form_data
 
     def get_verifier(self, request_token=None, wp_user=None, wp_pass=None):
-        """ pretends to be a browser, uses the authorize auth link, submits user creds to WP login form to get
-        verifier string from access token """
+        """
+        Get verifier string from access token.
+
+        Pretends to be a browser, uses the authorize auth link,
+        submits user creds to WP login form.
+        """
 
         if request_token is None:
             request_token = self.request_token
@@ -513,10 +561,10 @@ class OAuth_3Leg(OAuth):
             else:
                 login_form_data[name] = values[0]
 
-        assert 'log' in login_form_data, 'input for user login did not appear on form'
-        assert 'pwd' in login_form_data, 'input for user password did not appear on form'
-
-        # print "submitting login form to %s : %s" % (login_form_action, str(login_form_data))
+        assert 'log' in login_form_data, \
+            'input for user login did not appear on form'
+        assert 'pwd' in login_form_data, \
+            'input for user password did not appear on form'
 
         confirmation_response = authorize_session.post(
             login_form_action, data=login_form_data, allow_redirects=True)
@@ -537,16 +585,21 @@ class OAuth_3Leg(OAuth):
             else:
                 authorize_form_data[name] = values[0]
 
-        assert 'wp-submit' in login_form_data, 'authorize button did not appear on form'
+        assert 'wp-submit' in login_form_data, \
+            'authorize button did not appear on form'
 
         final_response = authorize_session.post(
-            authorize_form_action, data=authorize_form_data, allow_redirects=False)
+            authorize_form_action, data=authorize_form_data,
+            allow_redirects=False)
 
-        assert \
-            final_response.status_code == 302, \
-            "was not redirected by authorize screen, was %d instead. something went wrong" \
-            % final_response.status_code
-        assert 'location' in final_response.headers, "redirect did not provide redirect location in header"
+        assert final_response.status_code == 302, \
+            (
+                "was not redirected by authorize screen, "
+                "was %d instead. something went wrong"
+                % final_response.status_code
+            )
+        assert 'location' in final_response.headers, \
+            "redirect did not provide redirect location in header"
 
         final_location = final_response.headers['location']
 
@@ -556,9 +609,11 @@ class OAuth_3Leg(OAuth):
 
         final_location_queries = parse_qs(urlparse(final_location).query)
 
-        assert \
-            'oauth_verifier' in final_location_queries, \
-            "oauth verifier not provided in final redirect: %s" % final_location
+        assert 'oauth_verifier' in final_location_queries, \
+            (
+                "oauth verifier not provided in final redirect: %s"
+                % final_location
+            )
 
         self._oauth_verifier = final_location_queries['oauth_verifier'][0]
         return self._oauth_verifier
@@ -580,7 +635,7 @@ class OAuth_3Leg(OAuth):
                     json.dump(creds, creds_store_file, ensure_ascii=False))
 
     def retrieve_access_creds(self):
-        """ retrieve the access_token and access_token_secret stored locally. """
+        """Retrieve access_token / access_token_secret stored locally."""
 
         if not self.creds_store:
             return
@@ -613,7 +668,8 @@ class OAuth_3Leg(OAuth):
         if oauth_verifier is None:
             oauth_verifier = self.oauth_verifier
         assert oauth_verifier, "Need an oauth verifier to perform this step"
-        assert self.request_token, "Need a valid request_token to perform this step"
+        assert self.request_token, \
+            "Need a valid request_token to perform this step"
 
         params = self.get_params()
         params += [
@@ -644,10 +700,16 @@ class OAuth_3Leg(OAuth):
 
         try:
             self._access_token = access_response_queries['oauth_token'][0]
-            self.access_token_secret = access_response_queries['oauth_token_secret'][0]
+            self.access_token_secret = \
+                access_response_queries['oauth_token_secret'][0]
         except:
-            raise UserWarning("Could not parse access_token or access_token_secret in response from %s : %s"
-                              % (repr(access_response.request.url), UrlUtils.beautify_response(access_response)))
+            raise UserWarning(
+                "Could not parse access_token or access_token_secret in "
+                "response from %s : %s"
+                % (
+                    repr(access_response.request.url),
+                    UrlUtils.beautify_response(access_response))
+                )
 
         self.store_access_creds()
 

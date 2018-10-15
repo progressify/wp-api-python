@@ -6,24 +6,22 @@ Wordpress Hellpers Class
 
 __title__ = "wordpress-requests"
 
-import re
-
 import posixpath
+import re
+from collections import OrderedDict
 
-from six import text_type, binary_type
+from bs4 import BeautifulSoup
+from six import binary_type, text_type
+from six.moves import reduce
 
 try:
-    from urllib.parse import urlencode, quote, unquote, parse_qs, parse_qsl, urlparse, urlunparse
+    from urllib.parse import (urlencode, quote, unquote, parse_qs, parse_qsl,
+                              urlparse, urlunparse)
     from urllib.parse import ParseResult as URLParseResult
 except ImportError:
     from urllib import urlencode, quote, unquote
     from urlparse import parse_qs, parse_qsl, urlparse, urlunparse
     from urlparse import ParseResult as URLParseResult
-
-from collections import OrderedDict
-from six.moves import reduce
-
-from bs4 import BeautifulSoup
 
 
 class StrUtils(object):
@@ -79,8 +77,8 @@ class SeqUtils(object):
     @classmethod
     def combine_two_ordered_dicts(cls, dict_a, dict_b):
         """
-        Combine OrderedDict a with b by starting with A and overwriting with items from b.
-        Attempt to preserve order
+        Combine OrderedDict a with b by starting with A and overwriting with
+        items from b. Attempt to preserve order
         """
         if not dict_a:
             return dict_b if dict_b else OrderedDict()
@@ -109,12 +107,15 @@ class UrlUtils(object):
 
     @classmethod
     def get_query_list(cls, url):
-        """ returns the list of queries in the url """
+        """Return the list of queries in the url."""
         return parse_qsl(urlparse(url).query)
 
     @classmethod
     def get_query_dict_singular(cls, url):
-        """ return an ordered mapping from each key in the query string to a singular value """
+        """
+        Return an ordered mapping from each key in the query string to a
+        singular value.
+        """
         query_list = cls.get_query_list(url)
         return OrderedDict(query_list)
         # query_dict = parse_qs(urlparse(url).query)
@@ -139,8 +140,8 @@ class UrlUtils(object):
         """ Gets the value of a single query in a url """
         url_params = parse_qs(urlparse(url).query)
         values = url_params.get(key, [default])
-        assert len(
-            values) == 1, "ambiguous value, could not get singular for key: %s" % key
+        assert len(values) == 1, \
+            "ambiguous value, could not get singular for key: %s" % key
         return values[0]
 
     @classmethod
@@ -152,14 +153,6 @@ class UrlUtils(object):
             query_string = urlencode(query_dict_singular)
             url = cls.substitute_query(url, query_string)
         return url
-
-    # @classmethod
-    # def split_url_query(cls, url):
-    #     """ Splits a url, returning the url without query and the query as a dict """
-    #     parsed_result = urlparse(url)
-    #     parsed_query_dict = parse_qs(parsed_result.query)
-    #     split_url = cls.substitute_query(url)
-    #     return split_url, parsed_query_dict
 
     @classmethod
     def split_url_query_singular(cls, url):
@@ -233,7 +226,8 @@ class UrlUtils(object):
         except:
             pass
         if 'html' in content_type.lower():
-            return BeautifulSoup(response.text, 'lxml').prettify().encode(errors='backslashreplace')
+            return BeautifulSoup(response.text, 'lxml').prettify().encode(
+                errors='backslashreplace')
         else:
             return response.text
 
@@ -310,7 +304,11 @@ class UrlUtils(object):
 
     @classmethod
     def normalize_params(cls, params):
-        """ Normalize parameters. works with RFC 5849 logic. params is a list of key, value pairs """
+        """
+        Normalize parameters.
+
+        Works with RFC 5849 logic. params is a list of key, value pairs.
+        """
         if isinstance(params, dict):
             params = params.items()
         params = [
@@ -325,7 +323,11 @@ class UrlUtils(object):
 
     @classmethod
     def sorted_params(cls, params):
-        """ Sort parameters. works with RFC 5849 logic. params is a list of key, value pairs """
+        """
+        Sort parameters.
+
+        works with RFC 5849 logic. params is a list of key, value pairs
+        """
 
         if isinstance(params, dict):
             params = params.items()

@@ -12,7 +12,8 @@ from setuptools import setup
 VERSION = ""
 with open("wordpress/__init__.py", "r") as fd:
     VERSION = re.search(
-        r"^__version__\s*=\s*['\"]([^\"]*)['\"]", fd.read(), re.MULTILINE).group(1)
+        r"^__version__\s*=\s*['\"]([^\"]*)['\"]", fd.read(), re.MULTILINE
+    ).group(1)
 
 if not VERSION:
     raise RuntimeError("Cannot find version information")

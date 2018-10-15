@@ -2,7 +2,6 @@
 import functools
 import logging
 import pdb
-import platform
 import random
 import sys
 import traceback
@@ -542,7 +541,10 @@ class OAuthTestcases(unittest.TestCase):
         )
 
         self.twitter_method = "POST"
-        self.twitter_target_url = "https://api.twitter.com/1/statuses/update.json?include_entities=true"
+        self.twitter_target_url = (
+            "https://api.twitter.com/1/statuses/update.json?"
+            "include_entities=true"
+        )
         self.twitter_params_raw = [
             ("status", "Hello Ladies + Gentlemen, a signed OAuth request!"),
             ("include_entities", "true"),
@@ -617,7 +619,10 @@ class OAuthTestcases(unittest.TestCase):
             ('oauth_version', self.lexev_version),
         ]
         self.lexev_request_signature = b"iPdHNIu4NGOjuXZ+YCdPWaRwvJY="
-        self.lexev_resource_url = 'https://api.bitbucket.org/1.0/repositories/st4lk/django-articles-transmeta/branches'
+        self.lexev_resource_url = (
+            'https://api.bitbucket.org/1.0/repositories/st4lk/'
+            'django-articles-transmeta/branches'
+        )
 
     def test_get_sign_key(self):
         self.assertEqual(
@@ -1122,7 +1127,7 @@ class WPAPITestCasesBase(unittest.TestCase):
         }
 
         with self.assertRaises(UserWarning):
-            response = self.wpapi.post('posts', data)
+            self.wpapi.post('posts', data)
 
 
 class WPAPITestCasesBasic(WPAPITestCasesBase):

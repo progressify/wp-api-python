@@ -7,15 +7,16 @@ Wordpress Requests Class
 __title__ = "wordpress-requests"
 
 import logging
-from json import dumps as jsonencode
 from pprint import pformat
 
-from requests import Request, Session
+from requests import Session
+
 from wordpress import __default_api__, __default_api_version__, __version__
 from wordpress.helpers import SeqUtils, StrUtils, UrlUtils
 
 try:
-    from urllib.parse import urlencode, quote, unquote, parse_qsl, urlparse, urlunparse
+    from urllib.parse import (urlencode, quote, unquote, parse_qsl, urlparse,
+                              urlunparse)
     from urllib.parse import ParseResult as URLParseResult
 except ImportError:
     from urllib import urlencode, quote, unquote
@@ -81,7 +82,9 @@ class API_Requests_Wrapper(object):
         ]
         return UrlUtils.join_components(components)
 
-    def request(self, method, url, auth=None, params=None, data=None, **kwargs):
+    def request(
+        self, method, url, auth=None, params=None, data=None, **kwargs
+    ):
         headers = {
             "user-agent": "Wordpress API Client-Python/%s" % __version__,
             "accept": "application/json"
