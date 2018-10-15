@@ -263,7 +263,6 @@ Upload an image
     endpoint = "/media"
     return wpapi.post(endpoint, data, headers=headers)
 
-
 Response
 --------
 
@@ -297,6 +296,15 @@ According the the [documentation](https://developer.wordpress.org/rest-api/refer
     >>> response = wpapi.delete(‘/users/<Id>?reassign=<other_id>&force=true’)
     >>> response.json()
     {“deleted”:true, ... }
+
+A Note on Encoding
+====
+
+In Python2, make sure to only `POST` unicode string objects or strings that
+have been correctly encoded as utf-8. Serializing objects containing non-utf8
+byte strings in Python2 is broken by importing `unicode_literals` from
+`__future__` because of a bug in `json.dumps`. You may be able to get around
+this problem by serializing the data yourself.
 
 
 Changelog
