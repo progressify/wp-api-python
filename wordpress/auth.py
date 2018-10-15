@@ -318,7 +318,7 @@ class OAuth_3Leg(OAuth):
         if self._creds_store:
             return os.path.expanduser(self._creds_store)
 
-    def get_auth_url(self, endpoint_url, method):
+    def get_auth_url(self, endpoint_url, method, **kwargs):
         """
         Return the URL with OAuth params.
         """
