@@ -22,7 +22,7 @@ before_script:
     - ./cc-test-reporter before-build
 # command to run tests
 script:
-  - py.test --cov=wordpress tests.py
+  - py.test --cov=wordpress tests
 after_success:
   - codecov
   - ./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT --debug
