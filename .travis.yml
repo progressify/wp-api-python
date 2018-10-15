@@ -1,8 +1,9 @@
 language: python
 sudo: required
 env:
-  - CODECOV_TOKEN: "da32b183-0d8b-4dc2-9bf9-e1743a39b2c8"
-  - CC_TEST_REPORTER_ID: "f65f25793658d7b33a3729b7b0303fef71fca3210105bb5b83605afb2fee687e"
+    global:
+      - CODECOV_TOKEN: "da32b183-0d8b-4dc2-9bf9-e1743a39b2c8"
+      - CC_TEST_REPORTER_ID: "f65f25793658d7b33a3729b7b0303fef71fca3210105bb5b83605afb2fee687e"
 services:
   - docker
 python:
