@@ -14,15 +14,6 @@ from requests import Session
 from wordpress import __default_api__, __default_api_version__, __version__
 from wordpress.helpers import SeqUtils, StrUtils, UrlUtils
 
-try:
-    from urllib.parse import (urlencode, quote, unquote, parse_qsl, urlparse,
-                              urlunparse)
-    from urllib.parse import ParseResult as URLParseResult
-except ImportError:
-    from urllib import urlencode, quote, unquote
-    from urlparse import parse_qsl, urlparse, urlunparse
-    from urlparse import ParseResult as URLParseResult
-
 
 class API_Requests_Wrapper(object):
     """ provides a wrapper for making requests that handles session info """

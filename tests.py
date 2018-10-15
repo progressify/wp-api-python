@@ -1,4 +1,6 @@
 """ API Tests """
+from __future__ import unicode_literals
+
 import functools
 import logging
 import pdb
@@ -14,22 +16,13 @@ from time import time
 import six
 import wordpress
 from httmock import HTTMock, all_requests, urlmatch
-from six import text_type, u
+from six import text_type
+from six.moves.urllib.parse import parse_qsl, urlparse
 from wordpress import __default_api__, __default_api_version__, auth
 from wordpress.api import API
 from wordpress.auth import Auth, OAuth
 from wordpress.helpers import SeqUtils, StrUtils, UrlUtils
 from wordpress.transport import API_Requests_Wrapper
-
-try:
-    from urllib.parse import (
-        urlencode, quote, unquote, parse_qs, parse_qsl, urlparse, urlunparse
-    )
-    from urllib.parse import ParseResult as URLParseResult
-except ImportError:
-    from urllib import urlencode, quote, unquote
-    from urlparse import parse_qs, parse_qsl, urlparse, urlunparse
-    from urlparse import ParseResult as URLParseResult
 
 
 def debug_on(*exceptions):
@@ -55,6 +48,7 @@ def debug_on(*exceptions):
 
 CURRENT_TIMESTAMP = int(time())
 SHITTY_NONCE = ""
+DEFAULT_ENCODING = sys.getdefaultencoding()
 
 
 class WordpressTestCase(unittest.TestCase):
@@ -1007,47 +1001,71 @@ class WCApiTestCases(WCApiTestCasesBase):
 
         wcapi.put('products/%s' % (product_id), {"name": original_title})
 
+    @unittest.skipIf(six.PY2, "non-utf8 bytes not supported in python2")
+    def test_APIPostWithBytesQuery(self):
+        wcapi = API(**self.api_params)
+        nonce = b"%f\xff" % random.random()
+
+        data = {
+            "name": nonce,
+            "type": "simple",
+        }
+
+        response = wcapi.post('products', data)
+        response_obj = response.json()
+        product_id = response_obj.get('id')
+
+        expected = StrUtils.to_text(nonce, encoding='ascii', errors='replace')
+
+        self.assertEqual(
+            response_obj.get('name'),
+            expected,
+        )
+        wcapi.delete('products/%s' % product_id)
+
+    @unittest.skipIf(six.PY2, "non-utf8 bytes not supported in python2")
     def test_APIPostWithLatin1Query(self):
         wcapi = API(**self.api_params)
-        nonce = u"%f\u00ae" % random.random()
+        nonce = "%f\u00ae" % random.random()
 
         data = {
             "name": nonce.encode('latin-1'),
             "type": "simple",
         }
 
-        if six.PY2:
-            response = wcapi.post('products', data)
-            response_obj = response.json()
-            product_id = response_obj.get('id')
-            self.assertEqual(response_obj.get('name'), nonce)
-            wcapi.delete('products/%s' % product_id)
-            return
-        with self.assertRaises(TypeError):
-            response = wcapi.post('products', data)
+        response = wcapi.post('products', data)
+        response_obj = response.json()
+        product_id = response_obj.get('id')
+
+        expected = StrUtils.to_text(
+            StrUtils.to_binary(nonce, encoding='latin-1'),
+            encoding='ascii', errors='replace'
+        )
+
+        self.assertEqual(
+            response_obj.get('name'),
+            expected
+        )
+        wcapi.delete('products/%s' % product_id)
 
     def test_APIPostWithUTF8Query(self):
         wcapi = API(**self.api_params)
-        nonce = u"%f\u00ae" % random.random()
+        nonce = "%f\u00ae" % random.random()
 
         data = {
             "name": nonce.encode('utf8'),
             "type": "simple",
         }
 
-        if six.PY2:
-            response = wcapi.post('products', data)
-            response_obj = response.json()
-            product_id = response_obj.get('id')
-            self.assertEqual(response_obj.get('name'), nonce)
-            wcapi.delete('products/%s' % product_id)
-            return
-        with self.assertRaises(TypeError):
-            response = wcapi.post('products', data)
+        response = wcapi.post('products', data)
+        response_obj = response.json()
+        product_id = response_obj.get('id')
+        self.assertEqual(response_obj.get('name'), nonce)
+        wcapi.delete('products/%s' % product_id)
 
     def test_APIPostWithUnicodeQuery(self):
         wcapi = API(**self.api_params)
-        nonce = u"%f\u00ae" % random.random()
+        nonce = "%f\u00ae" % random.random()
 
         data = {
             "name": nonce,
@@ -1100,7 +1118,7 @@ class WPAPITestCasesBase(unittest.TestCase):
         self.assertEqual(len(response_obj), 2)
 
     def test_APIPostData(self):
-        nonce = u"%f\u00ae" % random.random()
+        nonce = "%f\u00ae" % random.random()
 
         content = "api test post"
 
@@ -1120,7 +1138,7 @@ class WPAPITestCasesBase(unittest.TestCase):
         """
         No excerpt so should fail to be created.
         """
-        nonce = u"%f\u00ae" % random.random()
+        nonce = "%f\u00ae" % random.random()
 
         data = {
             'a': nonce

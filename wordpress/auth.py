@@ -6,39 +6,25 @@ Wordpress OAuth1.0a Class
 
 __title__ = "wordpress-auth"
 
-# from base64 import b64encode
 import binascii
 import json
 import logging
 import os
+from collections import OrderedDict
 from hashlib import sha1, sha256
 from hmac import new as HMAC
 from pprint import pformat
 from random import randint
 from time import time
 
-# import webbrowser
 import requests
 from requests.auth import HTTPBasicAuth
 
 from bs4 import BeautifulSoup
+from six.moves.urllib.parse import parse_qs, parse_qsl, quote, urlparse
 from wordpress import __version__
 
 from .helpers import StrUtils, UrlUtils
-
-try:
-    from urllib.parse import (urlencode, quote, unquote, parse_qs, parse_qsl,
-                              urlparse, urlunparse)
-    from urllib.parse import ParseResult as URLParseResult
-except ImportError:
-    from urllib import urlencode, quote, unquote
-    from urlparse import parse_qs, parse_qsl, urlparse, urlunparse
-    from urlparse import ParseResult as URLParseResult
-
-try:
-    from collections import OrderedDict
-except ImportError:
-    from ordereddict import OrderedDict
 
 
 class Auth(object):
@@ -492,13 +478,9 @@ class OAuth_3Leg(OAuth):
             % (form_soup.prettify()).encode('ascii', errors='backslashreplace')
 
         form_data = OrderedDict()
-        for input_soup in form_soup.select('input') + form_soup.select('button'):
-            # print "input, class:%5s, id=%5s, name=%5s, value=%s" % (
-            #     input_soup.get('class'),
-            #     input_soup.get('id'),
-            #     input_soup.get('name'),
-            #     input_soup.get('value')
-            # )
+        for input_soup in (
+            form_soup.select('input') + form_soup.select('button')
+        ):
             name = input_soup.get('name')
             if not name:
                 continue

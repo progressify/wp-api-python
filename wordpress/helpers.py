@@ -1,27 +1,24 @@
 # -*- coding: utf-8 -*-
 
 """
-Wordpress Hellpers Class
+Wordpress Hellper Class
 """
 
 __title__ = "wordpress-requests"
 
+import json
 import posixpath
 import re
+import sys
 from collections import OrderedDict
 
 from bs4 import BeautifulSoup
-from six import binary_type, text_type
+from six import (PY2, PY3, binary_type, iterbytes, string_types, text_type,
+                 unichr)
 from six.moves import reduce
-
-try:
-    from urllib.parse import (urlencode, quote, unquote, parse_qs, parse_qsl,
-                              urlparse, urlunparse)
-    from urllib.parse import ParseResult as URLParseResult
-except ImportError:
-    from urllib import urlencode, quote, unquote
-    from urlparse import parse_qs, parse_qsl, urlparse, urlunparse
-    from urlparse import ParseResult as URLParseResult
+from six.moves.urllib.parse import ParseResult as URLParseResult
+from six.moves.urllib.parse import (parse_qs, parse_qsl, quote, urlencode,
+                                    urlparse, urlunparse)
 
 
 class StrUtils(object):
@@ -46,19 +43,54 @@ class StrUtils(object):
         return cls.remove_tail(*args, **kwargs)
 
     @classmethod
-    def to_binary(cls, string, encoding='utf8', errors='backslashreplace'):
+    def to_text(cls, string, encoding='utf-8', errors='replace'):
+        if isinstance(string, text_type):
+            return string
         if isinstance(string, binary_type):
             try:
-                string = string.decode('utf8')
-            except UnicodeDecodeError:
-                string = string.decode('latin-1')
-        if not isinstance(string, text_type):
-            string = text_type(string)
-        return string.encode(encoding, errors=errors)
+                return string.decode(encoding, errors=errors)
+            except TypeError:
+                return ''.join([
+                    unichr(c) for c in iterbytes(string)
+                ])
+        return text_type(string)
 
     @classmethod
-    def to_binary_ascii(cls, string):
-        return cls.to_binary(string, 'ascii')
+    def to_binary(cls, string, encoding='utf8', errors='backslashreplace'):
+        if isinstance(string, binary_type):
+            return string
+        if not isinstance(string, text_type):
+            string = text_type(string)
+        return string.encode(encoding, errors)
+
+    @classmethod
+    def jsonencode(cls, data, **kwargs):
+        # kwargs['cls'] = BytesJsonEncoder
+        # if PY2:
+        #     kwargs['encoding'] = 'utf8'
+        if PY2:
+            for encoding in [
+                kwargs.get('encoding', 'utf8'),
+                sys.getdefaultencoding(),
+                'utf8',
+            ]:
+                try:
+                    kwargs['encoding'] = encoding
+                    return json.dumps(data, **kwargs)
+                except UnicodeDecodeError:
+                    pass
+        kwargs.pop('encoding', None)
+        kwargs['cls'] = BytesJsonEncoder
+        return json.dumps(data, **kwargs)
+
+
+class BytesJsonEncoder(json.JSONEncoder):
+    def default(self, obj):
+
+        if isinstance(obj, binary_type):
+            return StrUtils.to_text(obj, errors='replace')
+        # Let the base class default method raise the TypeError
+        return json.JSONEncoder.default(self, obj)
 
 
 class SeqUtils(object):

@@ -4,16 +4,17 @@
 Wordpress API Class
 """
 
-__title__ = "wordpress-api"
+from __future__ import unicode_literals
 
 # from requests import request
 import logging
-from json import dumps as jsonencode
 
 from six import text_type
 from wordpress.auth import BasicAuth, NoAuth, OAuth, OAuth_3Leg
 from wordpress.helpers import StrUtils, UrlUtils
 from wordpress.transport import API_Requests_Wrapper
+
+__title__ = "wordpress-api"
 
 
 class API(object):
@@ -113,7 +114,7 @@ class API(object):
             isinstance(response_json, dict)
             and ('code' in response_json or 'message' in response_json)
         ):
-            reason = u" - ".join([
+            reason = " - ".join([
                 text_type(response_json.get(key))
                 for key in ['code', 'message', 'data']
                 if key in response_json
@@ -180,15 +181,15 @@ class API(object):
                     remedy = "try changing url to %s" % header_url
 
         msg = (
-            u"API call to %s returned \nCODE: "
+            "API call to %s returned \nCODE: "
             "%s\nRESPONSE:%s \nHEADERS: %s\nREQ_BODY:%s"
-        ) % (
+        ) % tuple(map(StrUtils.to_text, [
             request_url,
-            text_type(response.status_code),
+            response.status_code,
             UrlUtils.beautify_response(response),
-            text_type(response_headers),
-            StrUtils.to_binary(request_body)[:1000]
-        )
+            response_headers,
+            request_body[:1000]
+        ]))
         if reason:
             msg += "\nBecause of %s" % StrUtils.to_binary(reason)
         if remedy:
@@ -206,9 +207,10 @@ class API(object):
             'content-type', 'application/json')
 
         if data is not None and content_type.startswith('application/json'):
-            data = jsonencode(data, ensure_ascii=False)
+            data = StrUtils.jsonencode(data, ensure_ascii=False)
+
             # enforce utf-8 encoded binary
-            data = StrUtils.to_binary(data, encoding='utf8')
+            data = StrUtils.to_binary(data)
 
         response = self.requester.request(
             method=method,
