@@ -39,7 +39,8 @@ class API(object):
             auth_class = NoAuth
 
         if kwargs.get('version', '').startswith('wc') and kwargs.get('oauth1a_3leg'):
-            self.logger.warn("WooCommerce JSON Api does not seem to support 3leg")
+            self.logger.warn(
+                "WooCommerce JSON Api does not seem to support 3leg")
 
         self.auth = auth_class(**auth_kwargs)
 
@@ -107,18 +108,18 @@ class API(object):
 
         if isinstance(response_json, dict) and ('code' in response_json or 'message' in response_json):
             reason = u" - ".join([
-                text_type(response_json.get(key)) for key in ['code', 'message', 'data'] \
+                text_type(response_json.get(key)) for key in ['code', 'message', 'data']
                 if key in response_json
             ])
             code = text_type(response_json.get('code'))
 
             if code == 'rest_user_invalid_email':
                 remedy = "Try checking the email %s doesn't already exist" % \
-                request_body.get('email')
+                    request_body.get('email')
 
             elif code == 'json_oauth1_consumer_mismatch':
                 remedy = "Try deleting the cached credentials at %s" % \
-                self.auth.creds_store
+                    self.auth.creds_store
 
             elif code == 'woocommerce_rest_cannot_view':
                 if not self.auth.query_string_auth:
@@ -158,12 +159,13 @@ class API(object):
                     header_api_url = StrUtils.eviscerate(header_api_url, '/')
 
                 if header_api_url and requester_api_url\
-                and header_api_url != requester_api_url:
+                        and header_api_url != requester_api_url:
                     reason = "hostname mismatch. %s != %s" % (
                         header_api_url, requester_api_url
                     )
                     header_url = StrUtils.eviscerate(header_api_url, '/')
-                    header_url = StrUtils.eviscerate(header_url, self.requester.api)
+                    header_url = StrUtils.eviscerate(
+                        header_url, self.requester.api)
                     header_url = StrUtils.eviscerate(header_url, '/')
                     remedy = "try changing url to %s" % header_url
 
@@ -187,13 +189,13 @@ class API(object):
         endpoint_url = self.auth.get_auth_url(endpoint_url, method, **kwargs)
         auth = self.auth.get_auth()
 
-        content_type = kwargs.get('headers', {}).get('content-type', 'application/json')
+        content_type = kwargs.get('headers', {}).get(
+            'content-type', 'application/json')
 
         if data is not None and content_type.startswith('application/json'):
             data = jsonencode(data, ensure_ascii=False)
             # enforce utf-8 encoded binary
             data = StrUtils.to_binary(data, encoding='utf8')
-
 
         response = self.requester.request(
             method=method,

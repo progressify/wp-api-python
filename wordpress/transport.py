@@ -25,6 +25,7 @@ except ImportError:
 
 class API_Requests_Wrapper(object):
     """ provides a wrapper for making requests that handles session info """
+
     def __init__(self, url, **kwargs):
         self.logger = logging.getLogger(__name__)
         self.url = url
@@ -119,7 +120,8 @@ class API_Requests_Wrapper(object):
         self.logger.debug("response_code:\n%s" % pformat(response.status_code))
         try:
             response_json = response.json()
-            self.logger.debug("response_json:\n%s" % (pformat(response_json)[:1000]))
+            self.logger.debug("response_json:\n%s" %
+                              (pformat(response_json)[:1000]))
         except ValueError:
             response_text = response.text
             self.logger.debug("response_text:\n%s" % (response_text[:1000]))

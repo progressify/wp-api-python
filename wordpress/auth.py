@@ -40,7 +40,6 @@ except ImportError:
     from ordereddict import OrderedDict
 
 
-
 class Auth(object):
     """ Boilerplate for handling authentication stuff. """
 
@@ -65,8 +64,10 @@ class Auth(object):
         """ Returns the auth parameter used in requests """
         pass
 
+
 class BasicAuth(Auth):
     """ Does not perform any signing, just logs in with oauth creds """
+
     def __init__(self, requester, consumer_key, consumer_secret, **kwargs):
         super(BasicAuth, self).__init__(requester, **kwargs)
         self.consumer_key = consumer_key
@@ -94,13 +95,16 @@ class BasicAuth(Auth):
         if not self.query_string_auth:
             return HTTPBasicAuth(self.consumer_key, self.consumer_secret)
 
+
 class NoAuth(Auth):
     """
     Just a dummy Auth object to allow header based
     authorization per request
     """
+
     def get_auth_url(self, endpoint_url, method, **kwargs):
         return endpoint_url
+
 
 class OAuth(Auth):
     """ Signs string with oauth consumer_key and consumer_secret """
@@ -126,7 +130,7 @@ class OAuth(Auth):
             raise UserWarning("no consumer_secret provided")
         token_secret = str(token_secret) if token_secret else ''
         if self.api_namespace == 'wc-api' \
-        and self.api_version in ["v1", "v2"]:
+                and self.api_version in ["v1", "v2"]:
             # special conditions for wc-api v1-2
             key = consumer_secret
         else:
@@ -158,12 +162,13 @@ class OAuth(Auth):
             if key != "oauth_signature":
                 params_without_signature.append((key, value))
 
-        self.logger.debug('sorted_params before sign: %s' % pformat(params_without_signature) )
+        self.logger.debug('sorted_params before sign: %s' %
+                          pformat(params_without_signature))
 
-        signature = self.generate_oauth_signature(method, params_without_signature, url, sign_key)
+        signature = self.generate_oauth_signature(
+            method, params_without_signature, url, sign_key)
 
-        self.logger.debug('signature: %s' % signature )
-
+        self.logger.debug('signature: %s' % signature)
 
         params = params_without_signature + [("oauth_signature", signature)]
 
@@ -195,7 +200,7 @@ class OAuth(Auth):
         url = UrlUtils.substitute_query(url)
         base_request_uri = quote(url, "")
         query_string = UrlUtils.flatten_params(params)
-        query_string = quote( query_string, '~')
+        query_string = quote(query_string, '~')
         return "%s&%s&%s" % (
             method.upper(), base_request_uri, query_string
         )
@@ -245,13 +250,15 @@ class OAuth(Auth):
             sha1
         ).hexdigest()
 
+
 class OAuth_3Leg(OAuth):
     """ Provides 3 legged OAuth1a, mostly based off this: http://www.lexev.org/en/2015/oauth-step-step/"""
 
     # oauth_version = '1.0A'
 
     def __init__(self, requester, consumer_key, consumer_secret, callback, **kwargs):
-        super(OAuth_3Leg, self).__init__(requester, consumer_key, consumer_secret, **kwargs)
+        super(OAuth_3Leg, self).__init__(
+            requester, consumer_key, consumer_secret, **kwargs)
         self.callback = callback
         self.wp_user = kwargs.pop('wp_user', None)
         self.wp_pass = kwargs.pop('wp_pass', None)
@@ -314,9 +321,10 @@ class OAuth_3Leg(OAuth):
             ('oauth_token', self.access_token)
         ]
 
-        sign_key = self.get_sign_key(self.consumer_secret, self.access_token_secret)
+        sign_key = self.get_sign_key(
+            self.consumer_secret, self.access_token_secret)
 
-        self.logger.debug('sign_key: %s' % sign_key )
+        self.logger.debug('sign_key: %s' % sign_key)
 
         return self.add_params_sign(method, endpoint_url, params, sign_key)
 
@@ -363,7 +371,8 @@ class OAuth_3Leg(OAuth):
         ]
 
         request_token_url = self.authentication['oauth1']['request']
-        request_token_url = self.add_params_sign("GET", request_token_url, params)
+        request_token_url = self.add_params_sign(
+            "GET", request_token_url, params)
 
         response = self.requester.get(request_token_url)
         self.logger.debug('get_request_token response: %s' % response.text)
@@ -372,13 +381,13 @@ class OAuth_3Leg(OAuth):
         try:
             self._request_token = resp_content['oauth_token'][0]
         except:
-            raise UserWarning("Could not parse request_token in response from %s : %s" \
-                % (repr(response.request.url), UrlUtils.beautify_response(response)))
+            raise UserWarning("Could not parse request_token in response from %s : %s"
+                              % (repr(response.request.url), UrlUtils.beautify_response(response)))
         try:
             self.request_token_secret = resp_content['oauth_token_secret'][0]
         except:
-            raise UserWarning("Could not parse request_token_secret in response from %s : %s" \
-                % (repr(response.request.url), UrlUtils.beautify_response(response)))
+            raise UserWarning("Could not parse request_token_secret in response from %s : %s"
+                              % (repr(response.request.url), UrlUtils.beautify_response(response)))
 
         return self._request_token, self.request_token_secret
 
@@ -392,21 +401,27 @@ class OAuth_3Leg(OAuth):
             if error and error.stripped_strings:
                 for stripped_string in error.stripped_strings:
                     if "plase solve this math problem" in stripped_string.lower():
-                        raise UserWarning("Can't log in if form has capcha ... yet")
-                raise UserWarning("could not parse login form error. %s " % str(error))
+                        raise UserWarning(
+                            "Can't log in if form has capcha ... yet")
+                raise UserWarning(
+                    "could not parse login form error. %s " % str(error))
         if response.status_code == 200:
             error = login_form_soup.select_one('div#login_error')
             if error and error.stripped_strings:
                 for stripped_string in error.stripped_strings:
                     if "invalid token" in stripped_string.lower():
-                        raise UserWarning("Invalid token: %s" % repr(kwargs.get('token')))
+                        raise UserWarning("Invalid token: %s" %
+                                          repr(kwargs.get('token')))
                     elif "invalid username" in stripped_string.lower():
-                        raise UserWarning("Invalid username: %s" % repr(kwargs.get('username')))
+                        raise UserWarning("Invalid username: %s" %
+                                          repr(kwargs.get('username')))
                     elif "the password you entered" in stripped_string.lower():
-                        raise UserWarning("Invalid password: %s" % repr(kwargs.get('password')))
-                raise UserWarning("could not parse login form error. %s " % str(error))
+                        raise UserWarning("Invalid password: %s" %
+                                          repr(kwargs.get('password')))
+                raise UserWarning(
+                    "could not parse login form error. %s " % str(error))
         raise UserWarning(
-            "Login form response was code %s. original error: \n%s" % \
+            "Login form response was code %s. original error: \n%s" %
             (str(response.status_code), repr(exc))
         )
 
@@ -465,23 +480,26 @@ class OAuth_3Leg(OAuth):
             wp_pass = self.wp_pass
 
         authorize_url = self.authentication['oauth1']['authorize']
-        authorize_url = UrlUtils.add_query(authorize_url, 'oauth_token', request_token)
+        authorize_url = UrlUtils.add_query(
+            authorize_url, 'oauth_token', request_token)
 
         # we're using a different session from the usual API calls
         # (I think the headers are incompatible?)
 
         # self.requester.get(authorize_url)
         authorize_session = requests.Session()
-        authorize_session.headers.update({'User-Agent': "Wordpress API Client-Python/%s" % __version__})
+        authorize_session.headers.update(
+            {'User-Agent': "Wordpress API Client-Python/%s" % __version__})
 
         login_form_response = authorize_session.get(authorize_url)
         login_form_params = {
-            'username':wp_user,
-            'password':wp_pass,
-            'token':request_token
+            'username': wp_user,
+            'password': wp_pass,
+            'token': request_token
         }
         try:
-            login_form_action, login_form_data = self.get_form_info(login_form_response, 'loginform')
+            login_form_action, login_form_data = self.get_form_info(
+                login_form_response, 'loginform')
         except AssertionError as exc:
             self.parse_login_form_error(
                 login_form_response, exc, **login_form_params
@@ -500,9 +518,11 @@ class OAuth_3Leg(OAuth):
 
         # print "submitting login form to %s : %s" % (login_form_action, str(login_form_data))
 
-        confirmation_response = authorize_session.post(login_form_action, data=login_form_data, allow_redirects=True)
+        confirmation_response = authorize_session.post(
+            login_form_action, data=login_form_data, allow_redirects=True)
         try:
-            authorize_form_action, authorize_form_data = self.get_form_info(confirmation_response, 'oauth1_authorize_form')
+            authorize_form_action, authorize_form_data = self.get_form_info(
+                confirmation_response, 'oauth1_authorize_form')
         except AssertionError as exc:
             self.parse_login_form_error(
                 confirmation_response, exc, **login_form_params
@@ -519,12 +539,13 @@ class OAuth_3Leg(OAuth):
 
         assert 'wp-submit' in login_form_data, 'authorize button did not appear on form'
 
-        final_response = authorize_session.post(authorize_form_action, data=authorize_form_data, allow_redirects=False)
+        final_response = authorize_session.post(
+            authorize_form_action, data=authorize_form_data, allow_redirects=False)
 
         assert \
             final_response.status_code == 302, \
             "was not redirected by authorize screen, was %d instead. something went wrong" \
-                % final_response.status_code
+            % final_response.status_code
         assert 'location' in final_response.headers, "redirect did not provide redirect location in header"
 
         final_location = final_response.headers['location']
@@ -555,7 +576,8 @@ class OAuth_3Leg(OAuth):
             creds['access_token_secret'] = self.access_token_secret
         if creds:
             with open(self.creds_store, 'w+') as creds_store_file:
-                StrUtils.to_binary(json.dump(creds, creds_store_file, ensure_ascii=False))
+                StrUtils.to_binary(
+                    json.dump(creds, creds_store_file, ensure_ascii=False))
 
     def retrieve_access_creds(self):
         """ retrieve the access_token and access_token_secret stored locally. """
@@ -585,7 +607,6 @@ class OAuth_3Leg(OAuth):
         with open(self.creds_store, 'w+') as creds_store_file:
             creds_store_file.write('')
 
-
     def get_access_token(self, oauth_verifier=None):
         """ Uses the access authentication link to get an access token """
 
@@ -600,10 +621,12 @@ class OAuth_3Leg(OAuth):
             ('oauth_verifier', self.oauth_verifier)
         ]
 
-        sign_key = self.get_sign_key(self.consumer_secret, self.request_token_secret)
+        sign_key = self.get_sign_key(
+            self.consumer_secret, self.request_token_secret)
 
         access_token_url = self.authentication['oauth1']['access']
-        access_token_url = self.add_params_sign("POST", access_token_url, params, sign_key)
+        access_token_url = self.add_params_sign(
+            "POST", access_token_url, params, sign_key)
 
         access_response = self.requester.post(access_token_url)
 
@@ -623,8 +646,8 @@ class OAuth_3Leg(OAuth):
             self._access_token = access_response_queries['oauth_token'][0]
             self.access_token_secret = access_response_queries['oauth_token_secret'][0]
         except:
-            raise UserWarning("Could not parse access_token or access_token_secret in response from %s : %s" \
-                % (repr(access_response.request.url), UrlUtils.beautify_response(access_response)))
+            raise UserWarning("Could not parse access_token or access_token_secret in response from %s : %s"
+                              % (repr(access_response.request.url), UrlUtils.beautify_response(access_response)))
 
         self.store_access_creds()
 

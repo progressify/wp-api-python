@@ -62,11 +62,11 @@ class StrUtils(object):
     def to_binary_ascii(cls, string):
         return cls.to_binary(string, 'ascii')
 
+
 class SeqUtils(object):
     @classmethod
     def filter_true(cls, seq):
         return [item for item in seq if item]
-
 
     @classmethod
     def filter_unique_true(cls, list_a):
@@ -101,6 +101,7 @@ class SeqUtils(object):
         for arg in args:
             response = cls.combine_two_ordered_dicts(response, arg)
         return response
+
 
 class UrlUtils(object):
 
@@ -138,7 +139,8 @@ class UrlUtils(object):
         """ Gets the value of a single query in a url """
         url_params = parse_qs(urlparse(url).query)
         values = url_params.get(key, [default])
-        assert len(values) == 1, "ambiguous value, could not get singular for key: %s" % key
+        assert len(
+            values) == 1, "ambiguous value, could not get singular for key: %s" % key
         return values[0]
 
     @classmethod
@@ -226,7 +228,8 @@ class UrlUtils(object):
         """ Returns a beautified response in the default locale """
         content_type = 'html'
         try:
-            content_type = getattr(response, 'headers', {}).get('Content-Type', content_type)
+            content_type = getattr(response, 'headers', {}).get(
+                'Content-Type', content_type)
         except:
             pass
         if 'html' in content_type.lower():
@@ -254,8 +257,8 @@ class UrlUtils(object):
         """ Remove the port number from a URL if it is a default port. """
         if defaults is None:
             defaults = {
-                'http':80,
-                'https':443
+                'http': 80,
+                'https': 443
             }
 
         urlparse_result = urlparse(url)
@@ -364,4 +367,4 @@ class UrlUtils(object):
         params = cls.normalize_params(params)
         params = cls.sorted_params(params)
         params = cls.unique_params(params)
-        return "&".join(["%s=%s"%(key, value) for key, value in params])
+        return "&".join(["%s=%s" % (key, value) for key, value in params])

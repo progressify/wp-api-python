@@ -6,13 +6,13 @@ import platform
 import random
 import sys
 import traceback
-import six
 import unittest
 from collections import OrderedDict
 from copy import copy
 from tempfile import mkstemp
 from time import time
 
+import six
 import wordpress
 from httmock import HTTMock, all_requests, urlmatch
 from six import text_type, u
@@ -23,16 +23,20 @@ from wordpress.helpers import SeqUtils, StrUtils, UrlUtils
 from wordpress.transport import API_Requests_Wrapper
 
 try:
-    from urllib.parse import urlencode, quote, unquote, parse_qs, parse_qsl, urlparse, urlunparse
+    from urllib.parse import (
+        urlencode, quote, unquote, parse_qs, parse_qsl, urlparse, urlunparse
+    )
     from urllib.parse import ParseResult as URLParseResult
 except ImportError:
     from urllib import urlencode, quote, unquote
     from urlparse import parse_qs, parse_qsl, urlparse, urlunparse
     from urlparse import ParseResult as URLParseResult
 
+
 def debug_on(*exceptions):
     if not exceptions:
         exceptions = (AssertionError, )
+
     def decorator(f):
         @functools.wraps(f)
         def wrapper(*args, **kwargs):
@@ -49,8 +53,10 @@ def debug_on(*exceptions):
         return wrapper
     return decorator
 
+
 CURRENT_TIMESTAMP = int(time())
 SHITTY_NONCE = ""
+
 
 class WordpressTestCase(unittest.TestCase):
     """Test case for the client methods."""
@@ -123,7 +129,6 @@ class WordpressTestCase(unittest.TestCase):
             status = api.get("products").status_code
         self.assertEqual(status, 200)
 
-
     def test_get(self):
         """ Test GET requests """
         @all_requests
@@ -190,15 +195,27 @@ class WordpressTestCase(unittest.TestCase):
 
         check_sorted(['a', 'b'], ['a', 'b'])
         check_sorted(['b', 'a'], ['a', 'b'])
-        check_sorted(['a', 'b[a]', 'b[b]', 'b[c]', 'c'], ['a', 'b[a]', 'b[b]', 'b[c]', 'c'])
-        check_sorted(['a', 'b[c]', 'b[a]', 'b[b]', 'c'], ['a', 'b[c]', 'b[a]', 'b[b]', 'c'])
-        check_sorted(['d', 'b[c]', 'b[a]', 'b[b]', 'c'], ['b[c]', 'b[a]', 'b[b]', 'c', 'd'])
-        check_sorted(['a1', 'b[c]', 'b[a]', 'b[b]', 'a2'], ['a1', 'a2', 'b[c]', 'b[a]', 'b[b]'])
+        check_sorted(['a', 'b[a]', 'b[b]', 'b[c]', 'c'],
+                     ['a', 'b[a]', 'b[b]', 'b[c]', 'c'])
+        check_sorted(['a', 'b[c]', 'b[a]', 'b[b]', 'c'],
+                     ['a', 'b[c]', 'b[a]', 'b[b]', 'c'])
+        check_sorted(['d', 'b[c]', 'b[a]', 'b[b]', 'c'],
+                     ['b[c]', 'b[a]', 'b[b]', 'c', 'd'])
+        check_sorted(['a1', 'b[c]', 'b[a]', 'b[b]', 'a2'],
+                     ['a1', 'a2', 'b[c]', 'b[a]', 'b[b]'])
+
 
 class HelperTestcase(unittest.TestCase):
     def setUp(self):
-        self.test_url = "http://ich.local:8888/woocommerce/wc-api/v3/products?filter%5Blimit%5D=2&oauth_consumer_key=ck_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX&oauth_nonce=c4f2920b0213c43f2e8d3d3333168ec4a22222d1&oauth_signature=3ibOjMuhj6JGnI43BQZGniigHh8%3D&oauth_signature_method=HMAC-SHA1&oauth_timestamp=1481601370&page=2"
-
+        self.test_url = (
+            "http://ich.local:8888/woocommerce/wc-api/v3/products?"
+            "filter%5Blimit%5D=2&"
+            "oauth_consumer_key=ck_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX&"
+            "oauth_nonce=c4f2920b0213c43f2e8d3d3333168ec4a22222d1&"
+            "oauth_signature=3ibOjMuhj6JGnI43BQZGniigHh8%3D&"
+            "oauth_signature_method=HMAC-SHA1&"
+            "oauth_timestamp=1481601370&page=2"
+        )
 
     def test_url_is_ssl(self):
         self.assertTrue(UrlUtils.is_ssl("https://woo.test:8888"))
@@ -206,7 +223,8 @@ class HelperTestcase(unittest.TestCase):
 
     def test_url_substitute_query(self):
         self.assertEqual(
-            UrlUtils.substitute_query("https://woo.test:8888/sdf?param=value", "newparam=newvalue"),
+            UrlUtils.substitute_query(
+                "https://woo.test:8888/sdf?param=value", "newparam=newvalue"),
             "https://woo.test:8888/sdf?newparam=newvalue"
         )
         self.assertEqual(
@@ -218,20 +236,28 @@ class HelperTestcase(unittest.TestCase):
                 "https://woo.test:8888/sdf?param=value",
                 "newparam=newvalue&othernewparam=othernewvalue"
             ),
-            "https://woo.test:8888/sdf?newparam=newvalue&othernewparam=othernewvalue"
+            (
+                "https://woo.test:8888/sdf?newparam=newvalue&"
+                "othernewparam=othernewvalue"
+            )
         )
         self.assertEqual(
             UrlUtils.substitute_query(
                 "https://woo.test:8888/sdf?param=value",
                 "newparam=newvalue&othernewparam=othernewvalue"
             ),
-            "https://woo.test:8888/sdf?newparam=newvalue&othernewparam=othernewvalue"
+            (
+                "https://woo.test:8888/sdf?newparam=newvalue&"
+                "othernewparam=othernewvalue"
+            )
         )
 
     def test_url_add_query(self):
         self.assertEqual(
             "https://woo.test:8888/sdf?param=value&newparam=newvalue",
-            UrlUtils.add_query("https://woo.test:8888/sdf?param=value", 'newparam', 'newvalue')
+            UrlUtils.add_query(
+                "https://woo.test:8888/sdf?param=value", 'newparam', 'newvalue'
+            )
         )
 
     def test_url_join_components(self):
@@ -241,7 +267,8 @@ class HelperTestcase(unittest.TestCase):
         )
         self.assertEqual(
             'https://woo.test:8888/wp-json/wp/v2',
-            UrlUtils.join_components(['https://woo.test:8888/', 'wp-json', 'wp/v2'])
+            UrlUtils.join_components(
+                ['https://woo.test:8888/', 'wp-json', 'wp/v2'])
         )
 
     def test_url_get_php_value(self):
@@ -278,7 +305,8 @@ class HelperTestcase(unittest.TestCase):
                 'filter[limit]': '2',
                 'oauth_nonce': 'c4f2920b0213c43f2e8d3d3333168ec4a22222d1',
                 'oauth_timestamp': '1481601370',
-                'oauth_consumer_key': 'ck_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
+                'oauth_consumer_key':
+                    'ck_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
                 'oauth_signature_method': 'HMAC-SHA1',
                 'oauth_signature': '3ibOjMuhj6JGnI43BQZGniigHh8=',
                 'page': '2'
@@ -286,7 +314,8 @@ class HelperTestcase(unittest.TestCase):
         )
 
     def test_url_get_query_singular(self):
-        result = UrlUtils.get_query_singular(self.test_url, 'oauth_consumer_key')
+        result = UrlUtils.get_query_singular(
+            self.test_url, 'oauth_consumer_key')
         self.assertEqual(
             result,
             'ck_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
@@ -299,12 +328,28 @@ class HelperTestcase(unittest.TestCase):
 
     def test_url_set_query_singular(self):
         result = UrlUtils.set_query_singular(self.test_url, 'filter[limit]', 3)
-        expected = "http://ich.local:8888/woocommerce/wc-api/v3/products?filter%5Blimit%5D=3&oauth_consumer_key=ck_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX&oauth_nonce=c4f2920b0213c43f2e8d3d3333168ec4a22222d1&oauth_signature=3ibOjMuhj6JGnI43BQZGniigHh8%3D&oauth_signature_method=HMAC-SHA1&oauth_timestamp=1481601370&page=2"
+        expected = (
+            "http://ich.local:8888/woocommerce/wc-api/v3/products?"
+            "filter%5Blimit%5D=3&"
+            "oauth_consumer_key=ck_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX&"
+            "oauth_nonce=c4f2920b0213c43f2e8d3d3333168ec4a22222d1&"
+            "oauth_signature=3ibOjMuhj6JGnI43BQZGniigHh8%3D&"
+            "oauth_signature_method=HMAC-SHA1&oauth_timestamp=1481601370&"
+            "page=2"
+        )
         self.assertEqual(result, expected)
 
     def test_url_del_query_singular(self):
         result = UrlUtils.del_query_singular(self.test_url, 'filter[limit]')
-        expected = "http://ich.local:8888/woocommerce/wc-api/v3/products?oauth_consumer_key=ck_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX&oauth_nonce=c4f2920b0213c43f2e8d3d3333168ec4a22222d1&oauth_signature=3ibOjMuhj6JGnI43BQZGniigHh8%3D&oauth_signature_method=HMAC-SHA1&oauth_timestamp=1481601370&page=2"
+        expected = (
+            "http://ich.local:8888/woocommerce/wc-api/v3/products?"
+            "oauth_consumer_key=ck_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX&"
+            "oauth_nonce=c4f2920b0213c43f2e8d3d3333168ec4a22222d1&"
+            "oauth_signature=3ibOjMuhj6JGnI43BQZGniigHh8%3D&"
+            "oauth_signature_method=HMAC-SHA1&"
+            "oauth_timestamp=1481601370&"
+            "page=2"
+        )
         self.assertEqual(result, expected)
 
     def test_url_remove_default_port(self):
@@ -320,13 +365,13 @@ class HelperTestcase(unittest.TestCase):
     def test_seq_filter_true(self):
         self.assertEquals(
             ['a', 'b', 'c', 'd'],
-            SeqUtils.filter_true([None, 'a', False, 'b', 'c','d'])
+            SeqUtils.filter_true([None, 'a', False, 'b', 'c', 'd'])
         )
 
     def test_str_remove_tail(self):
         self.assertEqual(
             'sdf',
-            StrUtils.remove_tail('sdf/','/')
+            StrUtils.remove_tail('sdf/', '/')
         )
 
     def test_str_remove_head(self):
@@ -339,6 +384,7 @@ class HelperTestcase(unittest.TestCase):
             'sdf',
             StrUtils.decapitate('sdf', '/')
         )
+
 
 class TransportTestcases(unittest.TestCase):
     def setUp(self):
@@ -370,9 +416,12 @@ class TransportTestcases(unittest.TestCase):
 
         with HTTMock(woo_test_mock):
             # call requests
-            response = self.requester.request("GET", "https://woo.test:8888/wp-json/wp/v2/posts")
+            response = self.requester.request(
+                "GET", "https://woo.test:8888/wp-json/wp/v2/posts")
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.request.url, 'https://woo.test:8888/wp-json/wp/v2/posts')
+        self.assertEqual(response.request.url,
+                         'https://woo.test:8888/wp-json/wp/v2/posts')
+
 
 class BasicAuthTestcases(unittest.TestCase):
     def setUp(self):
@@ -415,8 +464,11 @@ class BasicAuthTestcases(unittest.TestCase):
         )
         endpoint_url = api.requester.endpoint_url(self.endpoint)
         endpoint_url = api.auth.get_auth_url(endpoint_url, 'GET')
-        expected_endpoint_url = '%s?consumer_key=%s&consumer_secret=%s' % (self.endpoint, self.consumer_key, self.consumer_secret)
-        expected_endpoint_url = UrlUtils.join_components([self.base_url, self.api_name, self.api_ver, expected_endpoint_url])
+        expected_endpoint_url = '%s?consumer_key=%s&consumer_secret=%s' % (
+            self.endpoint, self.consumer_key, self.consumer_secret)
+        expected_endpoint_url = UrlUtils.join_components(
+            [self.base_url, self.api_name, self.api_ver, expected_endpoint_url]
+        )
         self.assertEqual(
             endpoint_url,
             expected_endpoint_url
@@ -426,7 +478,6 @@ class BasicAuthTestcases(unittest.TestCase):
 
 
 class OAuthTestcases(unittest.TestCase):
-
 
     def setUp(self):
         self.base_url = "http://localhost:8888/wordpress/"
@@ -445,8 +496,6 @@ class OAuthTestcases(unittest.TestCase):
             version=self.api_ver,
             signature_method=self.signature_method
         )
-
-        # RFC EXAMPLE 1 DATA: https://tools.ietf.org/html/draft-hammer-oauth-10#section-1.2
 
         self.rfc1_api_url = 'https://photos.example.net/'
         self.rfc1_consumer_key = 'dpf43f3p2l4k3l03'
@@ -478,56 +527,9 @@ class OAuthTestcases(unittest.TestCase):
         ]
         self.rfc1_request_signature = b'74KNZJeDHnMBp0EMJ9ZHt/XKycU='
 
-
-        # # RFC EXAMPLE 3 DATA: https://tools.ietf.org/html/draft-hammer-oauth-10#section-3.4.1
-        # self.rfc3_method = "GET"
-        # self.rfc3_target_url = 'http://example.com/request'
-        # self.rfc3_params_raw = [
-        #     ('b5', r"=%3D"),
-        #     ('a3', "a"),
-        #     ('c@', ""),
-        #     ('a2', 'r b'),
-        #     ('oauth_consumer_key', '9djdj82h48djs9d2'),
-        #     ('oauth_token', 'kkk9d7dh3k39sjv7'),
-        #     ('oauth_signature_method', 'HMAC-SHA1'),
-        #     ('oauth_timestamp', 137131201),
-        #     ('oauth_nonce', '7d8f3e4a'),
-        #     ('c2', ''),
-        #     ('a3', '2 q')
-        # ]
-        # self.rfc3_params_encoded = [
-        #     ('b5', r"%3D%253D"),
-        #     ('a3', "a"),
-        #     ('c%40', ""),
-        #     ('a2', r"r%20b"),
-        #     ('oauth_consumer_key', '9djdj82h48djs9d2'),
-        #     ('oauth_token', 'kkk9d7dh3k39sjv7'),
-        #     ('oauth_signature_method', 'HMAC-SHA1'),
-        #     ('oauth_timestamp', '137131201'),
-        #     ('oauth_nonce', '7d8f3e4a'),
-        #     ('c2', ''),
-        #     ('a3', r"2%20q")
-        # ]
-        # self.rfc3_params_sorted = [
-        #     ('a2', r"r%20b"),
-        #     # ('a3', r"2%20q"), # disallow multiple
-        #     ('a3', "a"),
-        #     ('b5', r"%3D%253D"),
-        #     ('c%40', ""),
-        #     ('c2', ''),
-        #     ('oauth_consumer_key', '9djdj82h48djs9d2'),
-        #     ('oauth_nonce', '7d8f3e4a'),
-        #     ('oauth_signature_method', 'HMAC-SHA1'),
-        #     ('oauth_timestamp', '137131201'),
-        #     ('oauth_token', 'kkk9d7dh3k39sjv7'),
-        # ]
-        # self.rfc3_param_string = r"a2=r%20b&a3=2%20q&a3=a&b5=%3D%253D&c%40=&c2=&oauth_consumer_key=9djdj82h48djs9d2&oauth_nonce=7d8f3e4a&oauth_signature_method=HMAC-SHA1&oauth_timestamp=137131201&oauth_token=kkk9d7dh3k39sjv7"
-        # self.rfc3_base_string = r"GET&http%3A%2F%2Fexample.com%2Frequest&a2%3Dr%2520b%26a3%3D2%2520q%26a3%3Da%26b5%3D%253D%25253D%26c%2540%3D%26c2%3D%26oauth_consumer_key%3D9djdj82h48djs9d2%26oauth_nonce%3D7d8f3e4a%26oauth_signature_method%3DHMAC-SHA1%26oauth_timestamp%3D137131201%26oauth_token%3Dkkk9d7dh3k39sjv7"
-
-        # test data taken from : https://dev.twitter.com/oauth/overview/creating-signatures
-
         self.twitter_api_url = "https://api.twitter.com/"
-        self.twitter_consumer_secret = "kAcSOqF21Fu85e7zjz7ZN2U4ZRhfV3WpwPAoE3Z7kBw"
+        self.twitter_consumer_secret = \
+            "kAcSOqF21Fu85e7zjz7ZN2U4ZRhfV3WpwPAoE3Z7kBw"
         self.twitter_consumer_key = "xvz1evFS4wEEPTGEFPHBog"
         self.twitter_signature_method = "HMAC-SHA1"
         self.twitter_api = API(
@@ -548,20 +550,47 @@ class OAuthTestcases(unittest.TestCase):
             ("oauth_nonce", "kYjzVBB8Y0ZFabxSWbWovY3uYSQ2pTgmZeNu2VS4cg"),
             ("oauth_signature_method", self.twitter_signature_method),
             ("oauth_timestamp", "1318622958"),
-            ("oauth_token", "370773112-GmHxMAgYyLbNEtIKZeRNFsMKPR9EyMZeS9weJAEb"),
+            ("oauth_token",
+             "370773112-GmHxMAgYyLbNEtIKZeRNFsMKPR9EyMZeS9weJAEb"),
             ("oauth_version", "1.0"),
         ]
-        self.twitter_param_string = r"include_entities=true&oauth_consumer_key=xvz1evFS4wEEPTGEFPHBog&oauth_nonce=kYjzVBB8Y0ZFabxSWbWovY3uYSQ2pTgmZeNu2VS4cg&oauth_signature_method=HMAC-SHA1&oauth_timestamp=1318622958&oauth_token=370773112-GmHxMAgYyLbNEtIKZeRNFsMKPR9EyMZeS9weJAEb&oauth_version=1.0&status=Hello%20Ladies%20%2B%20Gentlemen%2C%20a%20signed%20OAuth%20request%21"
-        self.twitter_signature_base_string = r"POST&https%3A%2F%2Fapi.twitter.com%2F1%2Fstatuses%2Fupdate.json&include_entities%3Dtrue%26oauth_consumer_key%3Dxvz1evFS4wEEPTGEFPHBog%26oauth_nonce%3DkYjzVBB8Y0ZFabxSWbWovY3uYSQ2pTgmZeNu2VS4cg%26oauth_signature_method%3DHMAC-SHA1%26oauth_timestamp%3D1318622958%26oauth_token%3D370773112-GmHxMAgYyLbNEtIKZeRNFsMKPR9EyMZeS9weJAEb%26oauth_version%3D1.0%26status%3DHello%2520Ladies%2520%252B%2520Gentlemen%252C%2520a%2520signed%2520OAuth%2520request%2521"
+        self.twitter_param_string = (
+            r"include_entities=true&"
+            r"oauth_consumer_key=xvz1evFS4wEEPTGEFPHBog&"
+            r"oauth_nonce=kYjzVBB8Y0ZFabxSWbWovY3uYSQ2pTgmZeNu2VS4cg&"
+            r"oauth_signature_method=HMAC-SHA1&"
+            r"oauth_timestamp=1318622958&"
+            r"oauth_token=370773112-GmHxMAgYyLbNEtIKZeRNFsMKPR9EyMZeS9weJAEb&"
+            r"oauth_version=1.0&"
+            r"status=Hello%20Ladies%20%2B%20Gentlemen%2C%20a%20"
+            r"signed%20OAuth%20request%21"
+        )
+        self.twitter_signature_base_string = (
+            r"POST&"
+            r"https%3A%2F%2Fapi.twitter.com%2F1%2Fstatuses%2Fupdate.json&"
+            r"include_entities%3Dtrue%26"
+            r"oauth_consumer_key%3Dxvz1evFS4wEEPTGEFPHBog%26"
+            r"oauth_nonce%3DkYjzVBB8Y0ZFabxSWbWovY3uYSQ2pTgmZeNu2VS4cg%26"
+            r"oauth_signature_method%3DHMAC-SHA1%26"
+            r"oauth_timestamp%3D1318622958%26"
+            r"oauth_token%3D370773112-"
+            r"GmHxMAgYyLbNEtIKZeRNFsMKPR9EyMZeS9weJAEb%26"
+            r"oauth_version%3D1.0%26"
+            r"status%3DHello%2520Ladies%2520%252B%2520Gentlemen%252C%2520"
+            r"a%2520signed%2520OAuth%2520request%2521"
+        )
         self.twitter_token_secret = 'LswwdoUaIvS8ltyTt5jkRh4J50vUPVVHtR2YPi5kE'
-        self.twitter_signing_key = 'kAcSOqF21Fu85e7zjz7ZN2U4ZRhfV3WpwPAoE3Z7kBw&LswwdoUaIvS8ltyTt5jkRh4J50vUPVVHtR2YPi5kE'
+        self.twitter_signing_key = (
+            'kAcSOqF21Fu85e7zjz7ZN2U4ZRhfV3WpwPAoE3Z7kBw&'
+            'LswwdoUaIvS8ltyTt5jkRh4J50vUPVVHtR2YPi5kE'
+        )
         self.twitter_oauth_signature = b'tnnArxj06cWHq44gCs1OSKk/jLY='
 
-        self.lexev_consumer_key='your_app_key'
-        self.lexev_consumer_secret='your_app_secret'
-        self.lexev_callback='http://127.0.0.1/oauth1_callback'
-        self.lexev_signature_method='HMAC-SHA1'
-        self.lexev_version='1.0'
+        self.lexev_consumer_key = 'your_app_key'
+        self.lexev_consumer_secret = 'your_app_secret'
+        self.lexev_callback = 'http://127.0.0.1/oauth1_callback'
+        self.lexev_signature_method = 'HMAC-SHA1'
+        self.lexev_version = '1.0'
         self.lexev_api = API(
             url='https://bitbucket.org/',
             api='api',
@@ -574,43 +603,39 @@ class OAuthTestcases(unittest.TestCase):
             wp_pass='',
             oauth1a_3leg=True
         )
-        self.lexev_request_method='POST'
-        self.lexev_request_url='https://bitbucket.org/api/1.0/oauth/request_token'
-        self.lexev_request_nonce='27718007815082439851427366369'
-        self.lexev_request_timestamp='1427366369'
-        self.lexev_request_params=[
-               ('oauth_callback',self.lexev_callback),
-               ('oauth_consumer_key',self.lexev_consumer_key),
-               ('oauth_nonce',self.lexev_request_nonce),
-               ('oauth_signature_method',self.lexev_signature_method),
-               ('oauth_timestamp',self.lexev_request_timestamp),
-               ('oauth_version',self.lexev_version),
+        self.lexev_request_method = 'POST'
+        self.lexev_request_url = \
+            'https://bitbucket.org/api/1.0/oauth/request_token'
+        self.lexev_request_nonce = '27718007815082439851427366369'
+        self.lexev_request_timestamp = '1427366369'
+        self.lexev_request_params = [
+            ('oauth_callback', self.lexev_callback),
+            ('oauth_consumer_key', self.lexev_consumer_key),
+            ('oauth_nonce', self.lexev_request_nonce),
+            ('oauth_signature_method', self.lexev_signature_method),
+            ('oauth_timestamp', self.lexev_request_timestamp),
+            ('oauth_version', self.lexev_version),
         ]
-        self.lexev_request_signature=b"iPdHNIu4NGOjuXZ+YCdPWaRwvJY="
-        self.lexev_resource_url='https://api.bitbucket.org/1.0/repositories/st4lk/django-articles-transmeta/branches'
-
-    # def test_get_sign(self):
-    #     message = "POST&http%3A%2F%2Flocalhost%3A8888%2Fwordpress%2Foauth1%2Frequest&oauth_callback%3Dlocalhost%253A8888%252Fwordpress%26oauth_consumer_key%3DLCLwTOfxoXGh%26oauth_nonce%3D85285179173071287531477036693%26oauth_signature_method%3DHMAC-SHA1%26oauth_timestamp%3D1477036693%26oauth_version%3D1.0"
-    #     signature_method = 'HMAC-SHA1'
-    #     sig_key = 'k7zLzO3mF75Xj65uThpAnNvQHpghp4X1h5N20O8hCbz2kfJq&'
-    #     sig = OAuth.get_sign(message, signature_method, sig_key)
-    #     expected_sig = '8T93S/PDOrEd+N9cm84EDvsPGJ4='
-    #     self.assertEqual(sig, expected_sig)
+        self.lexev_request_signature = b"iPdHNIu4NGOjuXZ+YCdPWaRwvJY="
+        self.lexev_resource_url = 'https://api.bitbucket.org/1.0/repositories/st4lk/django-articles-transmeta/branches'
 
     def test_get_sign_key(self):
         self.assertEqual(
-            StrUtils.to_binary(self.wcapi.auth.get_sign_key(self.consumer_secret)),
+            StrUtils.to_binary(
+                self.wcapi.auth.get_sign_key(self.consumer_secret)),
             StrUtils.to_binary("%s&" % self.consumer_secret)
         )
 
         self.assertEqual(
-            StrUtils.to_binary(self.wcapi.auth.get_sign_key(self.twitter_consumer_secret, self.twitter_token_secret)),
+            StrUtils.to_binary(self.wcapi.auth.get_sign_key(
+                self.twitter_consumer_secret, self.twitter_token_secret)),
             StrUtils.to_binary(self.twitter_signing_key)
         )
 
     def test_flatten_params(self):
         self.assertEqual(
-            StrUtils.to_binary(UrlUtils.flatten_params(self.twitter_params_raw)),
+            StrUtils.to_binary(UrlUtils.flatten_params(
+                self.twitter_params_raw)),
             StrUtils.to_binary(self.twitter_param_string)
         )
 
@@ -629,13 +654,6 @@ class OAuthTestcases(unittest.TestCase):
         oauthnet_example = copy(oauthnet_example_sorted)
         random.shuffle(oauthnet_example)
 
-        # oauthnet_example_sorted = [
-        #     ('a', '1'),
-        #     ('c', 'hi%%20there'),
-        #     ('f', '25'),
-        #     ('z', 'p'),
-        # ]
-
         self.assertEqual(
             UrlUtils.sorted_params(oauthnet_example),
             oauthnet_example_sorted
@@ -652,24 +670,7 @@ class OAuthTestcases(unittest.TestCase):
             self.twitter_signature_base_string
         )
 
-    # @unittest.skip("changed order of parms to fit wordpress api")
     def test_generate_oauth_signature(self):
-
-        # endpoint_url = UrlUtils.join_components([self.base_url, self.api_name, self.api_ver, self.endpoint])
-        #
-        # params = OrderedDict()
-        # params["oauth_consumer_key"] = self.consumer_key
-        # params["oauth_timestamp"] = "1477041328"
-        # params["oauth_nonce"] = "166182658461433445531477041328"
-        # params["oauth_signature_method"] = self.signature_method
-        # params["oauth_version"] = "1.0"
-        # params["oauth_callback"] = 'localhost:8888/wordpress'
-        #
-        # sig = self.wcapi.auth.generate_oauth_signature("POST", params, endpoint_url)
-        # expected_sig = "517qNKeq/vrLZGj2UH7+q8ILWAg="
-        # self.assertEqual(sig, expected_sig)
-
-        # TEST WITH RFC EXAMPLE 1 DATA
 
         rfc1_request_signature = self.rfc1_api.auth.generate_oauth_signature(
             self.rfc1_request_method,
@@ -703,7 +704,6 @@ class OAuthTestcases(unittest.TestCase):
         )
         self.assertEqual(lexev_request_signature, self.lexev_request_signature)
 
-
     def test_add_params_sign(self):
         endpoint_url = self.wcapi.requester.endpoint_url('products?page=2')
 
@@ -715,11 +715,13 @@ class OAuthTestcases(unittest.TestCase):
         params["oauth_version"] = "1.0"
         params["oauth_callback"] = 'localhost:8888/wordpress'
 
-        signed_url = self.wcapi.auth.add_params_sign("GET", endpoint_url, params)
+        signed_url = self.wcapi.auth.add_params_sign(
+            "GET", endpoint_url, params)
 
         signed_url_params = parse_qsl(urlparse(signed_url).query)
         # self.assertEqual('page', signed_url_params[-1][0])
         self.assertIn('page', dict(signed_url_params))
+
 
 class OAuth3LegTestcases(unittest.TestCase):
     def setUp(self):
@@ -753,9 +755,12 @@ class OAuth3LegTestcases(unittest.TestCase):
                     ],
                     "authentication": {
                         "oauth1": {
-                            "request": "http://localhost:8888/wordpress/oauth1/request",
-                            "authorize": "http://localhost:8888/wordpress/oauth1/authorize",
-                            "access": "http://localhost:8888/wordpress/oauth1/access",
+                            "request":
+                            "http://localhost:8888/wordpress/oauth1/request",
+                            "authorize":
+                            "http://localhost:8888/wordpress/oauth1/authorize",
+                            "access":
+                            "http://localhost:8888/wordpress/oauth1/access",
                             "version": "0.1"
                         }
                     }
@@ -767,17 +772,20 @@ class OAuth3LegTestcases(unittest.TestCase):
     def woo_authentication_mock(*args, **kwargs):
         """ URL Mock """
         return {
-            'status_code':200,
-            'content': b"""oauth_token=XXXXXXXXXXXX&oauth_token_secret=YYYYYYYYYYYY"""
+            'status_code': 200,
+            'content':
+            b"""oauth_token=XXXXXXXXXXXX&oauth_token_secret=YYYYYYYYYYYY"""
         }
 
     def test_get_sign_key(self):
         oauth_token_secret = "PNW9j1yBki3e7M7EqB5qZxbe9n5tR6bIIefSMQ9M2pdyRI9g"
 
-        key = self.api.auth.get_sign_key(self.consumer_secret, oauth_token_secret)
+        key = self.api.auth.get_sign_key(
+            self.consumer_secret, oauth_token_secret)
         self.assertEqual(
             StrUtils.to_binary(key),
-            StrUtils.to_binary("%s&%s" % (self.consumer_secret, oauth_token_secret))
+            StrUtils.to_binary("%s&%s" %
+                               (self.consumer_secret, oauth_token_secret))
         )
 
     def test_auth_discovery(self):
@@ -789,9 +797,12 @@ class OAuth3LegTestcases(unittest.TestCase):
             authentication,
             {
                 "oauth1": {
-                    "request": "http://localhost:8888/wordpress/oauth1/request",
-                    "authorize": "http://localhost:8888/wordpress/oauth1/authorize",
-                    "access": "http://localhost:8888/wordpress/oauth1/access",
+                    "request":
+                    "http://localhost:8888/wordpress/oauth1/request",
+                    "authorize":
+                    "http://localhost:8888/wordpress/oauth1/authorize",
+                    "access":
+                    "http://localhost:8888/wordpress/oauth1/access",
                     "version": "0.1"
                 }
             }
@@ -804,12 +815,14 @@ class OAuth3LegTestcases(unittest.TestCase):
             self.assertTrue(authentication)
 
         with HTTMock(self.woo_authentication_mock):
-            request_token, request_token_secret = self.api.auth.get_request_token()
+            request_token, request_token_secret = \
+                self.api.auth.get_request_token()
             self.assertEquals(request_token, 'XXXXXXXXXXXX')
             self.assertEquals(request_token_secret, 'YYYYYYYYYYYY')
 
     def test_store_access_creds(self):
-        _, creds_store_path = mkstemp("wp-api-python-test-store-access-creds.json")
+        _, creds_store_path = mkstemp(
+            "wp-api-python-test-store-access-creds.json")
         api = API(
             url="http://woo.test",
             consumer_key=self.consumer_key,
@@ -827,13 +840,17 @@ class OAuth3LegTestcases(unittest.TestCase):
         with open(creds_store_path) as creds_store_file:
             self.assertEqual(
                 creds_store_file.read(),
-                '{"access_token": "XXXXXXXXXXXX", "access_token_secret": "YYYYYYYYYYYY"}'
+                ('{"access_token": "XXXXXXXXXXXX", '
+                 '"access_token_secret": "YYYYYYYYYYYY"}')
             )
 
     def test_retrieve_access_creds(self):
-        _, creds_store_path = mkstemp("wp-api-python-test-store-access-creds.json")
+        _, creds_store_path = mkstemp(
+            "wp-api-python-test-store-access-creds.json")
         with open(creds_store_path, 'w+') as creds_store_file:
-            creds_store_file.write('{"access_token": "XXXXXXXXXXXX", "access_token_secret": "YYYYYYYYYYYY"}')
+            creds_store_file.write(
+                ('{"access_token": "XXXXXXXXXXXX", '
+                 '"access_token_secret": "YYYYYYYYYYYY"}'))
 
         api = API(
             url="http://woo.test",
@@ -858,32 +875,35 @@ class OAuth3LegTestcases(unittest.TestCase):
             'YYYYYYYYYYYY'
         )
 
+
 class WCApiTestCasesBase(unittest.TestCase):
     """ Base class for WC API Test cases """
+
     def setUp(self):
         Auth.force_timestamp = CURRENT_TIMESTAMP
         Auth.force_nonce = SHITTY_NONCE
         self.api_params = {
-            'url':'http://localhost:8083/',
-            'api':'wc-api',
-            'version':'v3',
-            'consumer_key':'ck_659f6994ae88fed68897f9977298b0e19947979a',
-            'consumer_secret':'cs_9421d39290f966172fef64ae18784a2dc7b20976',
+            'url': 'http://localhost:8083/',
+            'api': 'wc-api',
+            'version': 'v3',
+            'consumer_key': 'ck_659f6994ae88fed68897f9977298b0e19947979a',
+            'consumer_secret': 'cs_9421d39290f966172fef64ae18784a2dc7b20976',
         }
+
 
 class WCApiTestCasesLegacy(WCApiTestCasesBase):
     """ Tests for WC API V3 """
+
     def setUp(self):
         super(WCApiTestCasesLegacy, self).setUp()
         self.api_params['version'] = 'v3'
         self.api_params['api'] = 'wc-api'
 
-
     def test_APIGet(self):
         wcapi = API(**self.api_params)
         response = wcapi.get('products')
         # print UrlUtils.beautify_response(response)
-        self.assertIn(response.status_code, [200,201])
+        self.assertIn(response.status_code, [200, 201])
         response_obj = response.json()
         self.assertIn('products', response_obj)
         self.assertEqual(len(response_obj['products']), 10)
@@ -893,7 +913,7 @@ class WCApiTestCasesLegacy(WCApiTestCasesBase):
         wcapi = API(**self.api_params)
         response = wcapi.get('products?page=2')
         # print UrlUtils.beautify_response(response)
-        self.assertIn(response.status_code, [200,201])
+        self.assertIn(response.status_code, [200, 201])
 
         response_obj = response.json()
         self.assertIn('products', response_obj)
@@ -903,13 +923,21 @@ class WCApiTestCasesLegacy(WCApiTestCasesBase):
     def test_APIGetWithComplexQuery(self):
         wcapi = API(**self.api_params)
         response = wcapi.get('products?page=2&filter%5Blimit%5D=2')
-        self.assertIn(response.status_code, [200,201])
+        self.assertIn(response.status_code, [200, 201])
         response_obj = response.json()
         self.assertIn('products', response_obj)
         self.assertEqual(len(response_obj['products']), 2)
 
-        response = wcapi.get('products?oauth_consumer_key=ck_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX&oauth_nonce=037470f3b08c9232b0888f52cb9d4685b44d8fd1&oauth_signature=wrKfuIjbwi%2BTHynAlTP4AssoPS0%3D&oauth_signature_method=HMAC-SHA1&oauth_timestamp=1481606275&filter%5Blimit%5D=3')
-        self.assertIn(response.status_code, [200,201])
+        response = wcapi.get(
+            'products?'
+            'oauth_consumer_key=ck_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX&'
+            'oauth_nonce=037470f3b08c9232b0888f52cb9d4685b44d8fd1&'
+            'oauth_signature=wrKfuIjbwi%2BTHynAlTP4AssoPS0%3D&'
+            'oauth_signature_method=HMAC-SHA1&'
+            'oauth_timestamp=1481606275&'
+            'filter%5Blimit%5D=3'
+        )
+        self.assertIn(response.status_code, [200, 201])
         response_obj = response.json()
         self.assertIn('products', response_obj)
         self.assertEqual(len(response_obj['products']), 3)
@@ -922,18 +950,22 @@ class WCApiTestCasesLegacy(WCApiTestCasesBase):
         product_id = first_product['id']
 
         nonce = b"%f" % (random.random())
-        response = wcapi.put('products/%s?filter%%5Blimit%%5D=5' % (product_id), {"product":{"title":text_type(nonce)}})
+        response = wcapi.put('products/%s?filter%%5Blimit%%5D=5' %
+                             (product_id),
+                             {"product": {"title": text_type(nonce)}})
         request_params = UrlUtils.get_query_dict_singular(response.request.url)
         response_obj = response.json()
         self.assertEqual(response_obj['product']['title'], text_type(nonce))
         self.assertEqual(request_params['filter[limit]'], text_type(5))
 
-        wcapi.put('products/%s' % (product_id), {"product":{"title":original_title}})
+        wcapi.put('products/%s' % (product_id),
+                  {"product": {"title": original_title}})
 
 
 class WCApiTestCases(WCApiTestCasesBase):
     oauth1a_3leg = False
     """ Tests for New wp-json/wc/v2 API """
+
     def setUp(self):
         super(WCApiTestCases, self).setUp()
         self.api_params['version'] = 'wc/v2'
@@ -947,10 +979,9 @@ class WCApiTestCases(WCApiTestCasesBase):
         wcapi = API(**self.api_params)
         per_page = 10
         response = wcapi.get('products?per_page=%d' % per_page)
-        self.assertIn(response.status_code, [200,201])
+        self.assertIn(response.status_code, [200, 201])
         response_obj = response.json()
         self.assertEqual(len(response_obj), per_page)
-
 
     def test_APIPutWithSimpleQuery(self):
         wcapi = API(**self.api_params)
@@ -962,13 +993,14 @@ class WCApiTestCases(WCApiTestCasesBase):
         product_id = first_product['id']
 
         nonce = b"%f" % (random.random())
-        response = wcapi.put('products/%s?page=2&per_page=5' % (product_id), {"name":text_type(nonce)})
+        response = wcapi.put('products/%s?page=2&per_page=5' %
+                             (product_id), {"name": text_type(nonce)})
         request_params = UrlUtils.get_query_dict_singular(response.request.url)
         response_obj = response.json()
         self.assertEqual(response_obj['name'], text_type(nonce))
         self.assertEqual(request_params['per_page'], '5')
 
-        wcapi.put('products/%s' % (product_id), {"name":original_title})
+        wcapi.put('products/%s' % (product_id), {"name": original_title})
 
     def test_APIPostWithLatin1Query(self):
         wcapi = API(**self.api_params)
@@ -1008,7 +1040,6 @@ class WCApiTestCases(WCApiTestCasesBase):
         with self.assertRaises(TypeError):
             response = wcapi.post('products', data)
 
-
     def test_APIPostWithUnicodeQuery(self):
         wcapi = API(**self.api_params)
         nonce = u"%f\u00ae" % random.random()
@@ -1024,22 +1055,24 @@ class WCApiTestCases(WCApiTestCasesBase):
         self.assertEqual(response_obj.get('name'), nonce)
         wcapi.delete('products/%s' % product_id)
 
+
 @unittest.skip("these simply don't work for some reason")
 class WCApiTestCases3Leg(WCApiTestCases):
     """ Tests for New wp-json/wc/v2 API with 3-leg """
     oauth1a_3leg = True
 
+
 class WPAPITestCasesBase(unittest.TestCase):
     api_params = {
-        'url':'http://localhost:8083/',
-        'api':'wp-json',
-        'version':'wp/v2',
-        'consumer_key':'tYG1tAoqjBEM',
-        'consumer_secret':'s91fvylVrqChwzzDbEJHEWyySYtAmlIsqqYdjka1KyVDdAyB',
-        'callback':'http://127.0.0.1/oauth1_callback',
-        'wp_user':'admin',
-        'wp_pass':'admin',
-        'oauth1a_3leg':True,
+        'url': 'http://localhost:8083/',
+        'api': 'wp-json',
+        'version': 'wp/v2',
+        'consumer_key': 'tYG1tAoqjBEM',
+        'consumer_secret': 's91fvylVrqChwzzDbEJHEWyySYtAmlIsqqYdjka1KyVDdAyB',
+        'callback': 'http://127.0.0.1/oauth1_callback',
+        'wp_user': 'admin',
+        'wp_pass': 'admin',
+        'oauth1a_3leg': True,
     }
 
     def setUp(self):
@@ -1050,13 +1083,13 @@ class WPAPITestCasesBase(unittest.TestCase):
     # @debug_on()
     def test_APIGet(self):
         response = self.wpapi.get('users/me')
-        self.assertIn(response.status_code, [200,201])
+        self.assertIn(response.status_code, [200, 201])
         response_obj = response.json()
         self.assertEqual(response_obj['name'], self.api_params['wp_user'])
 
     def test_APIGetWithSimpleQuery(self):
         response = self.wpapi.get('pages?page=2&per_page=2')
-        self.assertIn(response.status_code, [200,201])
+        self.assertIn(response.status_code, [200, 201])
 
         response_obj = response.json()
         self.assertEqual(len(response_obj), 2)
@@ -1078,15 +1111,14 @@ class WPAPITestCasesBase(unittest.TestCase):
         self.assertEqual(response_obj.get('title').get('raw'), nonce)
         self.wpapi.delete('posts/%s' % post_id)
 
-    def test_APIBadData(self):
+    def test_APIPostBadData(self):
         """
         No excerpt so should fail to be created.
         """
         nonce = u"%f\u00ae" % random.random()
 
-        content = "api test post"
-
         data = {
+            'a': nonce
         }
 
         with self.assertRaises(UserWarning):
