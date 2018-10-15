@@ -208,8 +208,10 @@ class API(object):
         endpoint_url = self.auth.get_auth_url(endpoint_url, method, **kwargs)
         auth = self.auth.get_auth()
 
-        content_type = kwargs.get('headers', {}).get(
-            'content-type', 'application/json')
+        content_type = 'application/json'
+        for key, value in kwargs.get('headers', {}).items():
+            if key.lower() == 'content-type':
+                content_type = value.lower()
 
         if data is not None and content_type.startswith('application/json'):
             data = StrUtils.jsonencode(data, ensure_ascii=False)
