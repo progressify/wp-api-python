@@ -7,6 +7,8 @@ Wordpress Hellper Class
 __title__ = "wordpress-requests"
 
 import json
+import locale
+import os
 import posixpath
 import re
 import sys
@@ -65,15 +67,14 @@ class StrUtils(object):
 
     @classmethod
     def jsonencode(cls, data, **kwargs):
-        # kwargs['cls'] = BytesJsonEncoder
-        # if PY2:
-        #     kwargs['encoding'] = 'utf8'
         if PY2:
-            for encoding in [
+            for encoding in filter(None, {
                 kwargs.get('encoding', 'utf8'),
                 sys.getdefaultencoding(),
+                sys.getfilesystemencoding(),
+                locale.getpreferredencoding(),
                 'utf8',
-            ]:
+            }):
                 try:
                     kwargs['encoding'] = encoding
                     return json.dumps(data, **kwargs)
