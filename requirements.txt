@@ -1,16 +1,9 @@
 six
-Twisted
 ordereddict
 requests_oauthlib
 pathlib2
-setuptools
 funcsigs
 requests
-zope.interface
 more_itertools
 colorama
-atomicwrites
-numpy
-argcomplete
 beautifulsoup4
-zope
