@@ -1,7 +1,6 @@
 six==1.11.0
 Twisted==18.7.0
 ordereddict==1.1
-httmock==1.2.3
 requests_oauthlib==1.0.0
 pathlib2==2.3.2
 setuptools==40.0.0

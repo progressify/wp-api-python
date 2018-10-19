@@ -1,6 +1,5 @@
 -r requirements.txt
 httmock==1.2.3
-six
 pytest
 pytest-cov==2.5.1
 coverage
