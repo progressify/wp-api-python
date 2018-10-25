@@ -41,12 +41,16 @@ class API_Requests_Wrapper(object):
         return UrlUtils.join_components(components)
 
     @property
+    def is_wp_json_v1(self):
+        return self.api == 'wp-json' and self.api_version == 'wp/v1'
+
+    @property
     def api_ver_url(self):
         components = [
             self.url,
             self.api,
         ]
-        if self.api_version != 'wp/v1':
+        if not self.is_wp_json_v1:
             components += [
                 self.api_version
             ]
@@ -64,7 +68,7 @@ class API_Requests_Wrapper(object):
             self.url,
             self.api
         ]
-        if self.api_version != 'wp/v1':
+        if not self.is_wp_json_v1:
             components += [
                 self.api_version
             ]
