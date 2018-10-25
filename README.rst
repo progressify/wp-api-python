@@ -3,6 +3,14 @@ Wordpress API - Python Client
 
 .. image:: https://travis-ci.org/derwentx/wp-api-python.svg?branch=master
     :target: https://travis-ci.org/derwentx/wp-api-python
+    
+.. image:: https://api.codeclimate.com/v1/badges/4df627621037b2df7e5d/maintainability
+   :target: https://codeclimate.com/github/derwentx/wp-api-python/maintainability
+   :alt: Maintainability
+    
+.. image:: https://api.codeclimate.com/v1/badges/4df627621037b2df7e5d/test_coverage
+   :target: https://codeclimate.com/github/derwentx/wp-api-python/test_coverage
+   :alt: Test Coverage
 
 .. image:: https://snyk.io/test/github/derwentx/wp-api-python/badge.svg?targetFile=requirements.txt
     :target: https://snyk.io/test/github/derwentx/wp-api-python?targetFile=requirements.txt
