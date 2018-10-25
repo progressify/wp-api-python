@@ -613,6 +613,8 @@ class OAuth_3Leg(OAuth):
             creds['access_token_secret'] = self.access_token_secret
         if creds:
             dirname = os.path.dirname(self.creds_store)
+            dirname = os.path.expanduser(dirname)
+            dirname = os.path.expandvars(dirname)
             if not os.path.exists(dirname):
                 os.mkdir(dirname)
             with open(self.creds_store, 'w+') as creds_store_file:
