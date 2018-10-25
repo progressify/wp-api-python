@@ -27,7 +27,8 @@ services:
       WORDPRESS_API_CALLBACK: "http://127.0.0.1/oauth1_callback"
       WORDPRESS_API_KEY: "tYG1tAoqjBEM"
       WORDPRESS_API_SECRET: "s91fvylVrqChwzzDbEJHEWyySYtAmlIsqqYdjka1KyVDdAyB"
-      WOOCOMMERCE_TEST_DATA: 1
+      WOOCOMMERCE_TEST_DATA: "1"
+      WOOCOMMERCE_TEST_DATA_URL: "https://raw.githubusercontent.com/woocommerce/woocommerce/c81b3cf1655f9983db37bff750cb5baae3c3236e/dummy-data/dummy-products.xml"
       WOOCOMMERCE_CONSUMER_KEY: "ck_659f6994ae88fed68897f9977298b0e19947979a"
       WOOCOMMERCE_CONSUMER_SECRET: "cs_9421d39290f966172fef64ae18784a2dc7b20976"
     links:
