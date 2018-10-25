@@ -612,6 +612,9 @@ class OAuth_3Leg(OAuth):
         if self.access_token_secret:
             creds['access_token_secret'] = self.access_token_secret
         if creds:
+            dirname = os.path.dirname(self.creds_store)
+            if not os.path.exists(dirname):
+                os.mkdir(dirname)
             with open(self.creds_store, 'w+') as creds_store_file:
                 StrUtils.to_binary(
                     json.dump(creds, creds_store_file, ensure_ascii=False))
