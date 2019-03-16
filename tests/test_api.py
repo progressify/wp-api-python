@@ -438,6 +438,24 @@ class WPAPITestCasesBase(unittest.TestCase):
         with self.assertRaises(UserWarning):
             self.wpapi.post('posts', data)
 
+    def test_APIPostBadDataHandleBadStatus(self):
+        """
+        Test handling explicitly a bad status code for a request.
+        """
+        nonce = "%f\u00ae" % random.random()
+
+        data = {
+            'a': nonce
+        }
+
+        response = self.wpapi.post('posts', data, handle_status_codes=[400])
+        self.assertEqual(response.status_code, 400)
+
+        # If we don't specify a correct status code to handle we should
+        # still expect an exception
+        with self.assertRaises(UserWarning):
+            self.wpapi.post('posts', data, handle_status_codes=[404])
+
     def test_APIPostMedia(self):
         img_path = 'tests/data/test.jpg'
         with open(img_path, 'rb') as test_file:
