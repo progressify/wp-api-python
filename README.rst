@@ -15,6 +15,9 @@ Wordpress API - Python Client
 .. image:: https://snyk.io/test/github/derwentx/wp-api-python/badge.svg?targetFile=requirements.txt
     :target: https://snyk.io/test/github/derwentx/wp-api-python?targetFile=requirements.txt
 
+.. image:: https://badge.fury.io/py/wordpress-api.svg
+    :target: https://badge.fury.io/py/wordpress-api
+
 A Python wrapper for the Wordpress and WooCommerce REST APIs with oAuth1a 3leg support.
 
 Supports the Wordpress REST API v1-2, WooCommerce REST API v1-3 and WooCommerce WP-API v1-2 (with automatic OAuth3a handling).
