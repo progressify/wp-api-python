@@ -1,6 +1,6 @@
 -r requirements.txt
 httmock
 pytest
-pytest-cov
+pytest-cov<2.6.0
 coverage
 codecov
