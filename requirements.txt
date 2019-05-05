@@ -7,3 +7,4 @@ requests
 more_itertools
 colorama
 beautifulsoup4
+urllib3>=1.24.3
