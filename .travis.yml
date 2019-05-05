@@ -1,28 +1,34 @@
 language: python
 sudo: required
 env:
-    global:
-      - CODECOV_TOKEN: "da32b183-0d8b-4dc2-9bf9-e1743a39b2c8"
-      - CC_TEST_REPORTER_ID: "f65f25793658d7b33a3729b7b0303fef71fca3210105bb5b83605afb2fee687e"
+  global:
+    CODECOV_TOKEN:
+      secure: ZXkVg6JLVPav6OJPzfUgIGD64e85N92tgpXA2nymIHfucCTGC5B4yniCTD49jz6xET1m1qRb04lvomCiQ7PeDoBW/LgJLIjXyJOW+2iA9VA3MdxwQF8Teu5W1J34wH4dm6nfn0KCNxhYRDTBkDgvXeUcXP5nNlo9w3sL+FKbAdXucwlL8ytcJXf641YhuGQpIrh1XGioBSNJ54BTRDXQXcRW76XaltxHCsbEv+fLH4yuahJdCTGjsr9cGdygAlo3FcLsqgkcjFCoNjg5UgBcPN8QPfWAppeIrmLRCq/q+p5KH2awPYqH0BL8jdTTmFElyGLmQBNnB6R5tI5HIx7+OCsw79mhXPVRgn3xkRj0OWRjzYlA+vW8JM2rEepixs9CRWtZJdC72oe1aytFb2cyVDfmotLwyuUqFI2ieQkyHgj0OLl1n1tcicRo8eS5RIB8mYicCm29lDrs/J6TFWSl/VqNUtZU+y54I/lv/fiFbRVjtMZ+PdwGHoigaVaIKeWe1TmlGWun7bh4Ov3jz62WtBlvuhz3LHMYD8OIuijot0HHqWsC1mlmZUvKoeSDYFXNLBBSAwMkkAfxxQM0PhMG3qUUirkd5xPJyBh1n8d4/KQzrkTblI7QzZgCwJE1r1L99XMs2/Ugf65gfTxRYFOMZGZUi0rzvXlu0Z7P5VrQr6c=
+    CC_TEST_REPORTER_ID:
+      secure: IceCOfujcdUwsTsg1328sbrvO/33N39/9pHxG/1VkMpqt47WDlG1lxbQGV78WuK7exip/JaDcB+iWPNJbyxGirOK0Co64O61iZcKUEbH6wjWxjeZ2yuhpyxyrnUF9OWmk8op4ewkU2ww6tzXQT2Lo+b/g8ryTFag0o8roA9unCj5p42aywZ927UIagaVqQh0sJ/qUUCmwAvGIB8bqKL8nxg97PwgBy38mH5PWE3Bqkm0FBpreKb1x4m4n9wZE29noiImT0xEIZMCwZ4zUPzbpKQmdUe1tHWf0hoQuVPWHLCMwqU2AW/PiY3CqlaAiUX71450WaKDrjbBtUvDl73YaUdiroWoL4rrm2UjlNGFbpEoqEbdBn2HLEefCw+zoo8YEPxieXVUQgmRygGpgoHTrRFqkReLA2BxV6F7IeMZ2AtOW0OXejzjcOEBWnRFs2sF6EqQZL8decye3P5CPcKVzNg28QEBBtdYgYT02qlY8JFv8N6KU9qNMjMvT9yQU8lfbV0iteMtdZl4coinNR34hNf9jMY+uj3/44kHgooygur/A9tHgQt/9/VTpS//y79gG6+ozllwzFQjzWE1AqLUPnPtSJZpvF8F5mmnww/sf/pjsV7jvA9VwyF/paO2JicGIN+bw86FNydXRHP3mmEAfJXOBiJVr5xPD2Wi1Q8Dw3k=
 services:
-  - docker
+- docker
 python:
-  - "2.7"
-  - "3.6"
-  - "nightly"
-# command to install dependencies
+- '2.7'
+- '3.6'
+- nightly
 install:
-  - docker-compose up -d
-  - pip install .
-  - pip install -r requirements-test.txt
-  - docker exec -it wpapipython_woocommerce_1 bash -c 'until [ -f .done ]; do sleep 1; done; echo "complete"'
+- docker-compose up -d
+- pip install .
+- pip install -r requirements-test.txt
+- docker exec -it wpapipython_woocommerce_1 bash -c 'until [ -f .done ]; do sleep
+  1; done; echo "complete"'
 before_script:
-    - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
-    - chmod +x ./cc-test-reporter
-    - ./cc-test-reporter before-build
-# command to run tests
+- curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+- chmod +x ./cc-test-reporter
+- "./cc-test-reporter before-build"
 script:
-  - py.test --cov=wordpress tests
+- py.test --cov=wordpress tests
 after_success:
-  - codecov
-  - ./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT --debug
+- codecov
+- "./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT --debug"
+deploy:
+  provider: pypi
+  user: derwents
+  password:
+    secure: Hj0CU4CzrA1WhZ/lHW7sDYXjmYSBnEfooRPwgoIMbjk+1G1THNk5A0efR6Vmjh5Ugm8vejHRRCUuYY6UwFE86KbGRUCModx/9rSeoLSKJ1DPIryHNRXgDDJGx2zt8fbvOwnzY7vFcvGDnN65EkGcZxekdwi4kNGQgp54vCQzjvf+dxo4A9+YuHPl8JzQekHQP3uU4VIMGgKSNpMfCdTraBzO8rAX0EuBTEEjczDJn3X77D/vSgqgA6G8oU0tcgnpd9ryydSHoc1icU70D0NUvHTLRr/RNVfIk+QVEcvcFedg4Wo81rcXxta1UQTmyIIZGBGNfNo/68o9GqsD0Edc4oHfZkMqainknaKfke8LtqdEEkOSwuhHX4NdzwBnMCV5rMud2W42hikiJKEPy3cGZJjiabUmEG8IpI1EsiMz5zCod/OVPGq87n4towvnsIpIzyGC7JkbSxHn+NYASkIkX38lhiPzYpgW7VZXRAUPebkxW8P2Bmyx0A8Sli2ijAkx04ul6jk1/HGCB8Y4EtQ9GuefH5pwfV1fhb2lEf56Dyd+REdZia/jiU+dKoPXYv+ZmM1ynrQVwn1/ZCHZejLOzhCGR5Dxk2yjT51hKPHcNzKboR++XiiKML1/cPSTDcGSamADazKuLMqJkP+CWRPkwts+tKBOka0YLCVJwD4ZFgU=
