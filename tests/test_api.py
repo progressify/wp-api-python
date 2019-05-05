@@ -482,6 +482,20 @@ class WPAPITestCasesBase(unittest.TestCase):
 
         self.wpapi.delete('media/%s?force=True' % created_id)
 
+    def test_APIPostComplexContent(self):
+        data = {
+            'content': "this content has <a href='#'>links</a>"
+        }
+        res = self.wpapi.post('posts', data)
+
+        self.assertEqual(res.status_code, 201)
+        res_obj = res.json()
+        res_id= res_obj.get('id')
+        self.assertTrue(res_id)
+        print(res_obj)
+        res_content = res_obj.get('content').get('raw')
+        self.assertEqual(data.get('content'), res_content)
+
     # def test_APIPostMediaBadCreds(self):
     #     """
     #     TODO: make sure the warning is "ensure login and basic auth is installed"
