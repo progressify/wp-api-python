@@ -219,6 +219,8 @@ class API(object):
             # enforce utf-8 encoded binary
             data = StrUtils.to_binary(data)
 
+        handle_status_codes = kwargs.pop('handle_status_codes', [])
+
         response = self.requester.request(
             method=method,
             url=endpoint_url,
@@ -227,7 +229,7 @@ class API(object):
             **kwargs
         )
 
-        if response.status_code not in [200, 201, 202]:
+        if response.status_code not in [200, 201, 202] + handle_status_codes:
             self.request_post_mortem(response)
 
         return response
