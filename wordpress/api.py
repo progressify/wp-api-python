@@ -7,6 +7,7 @@ Wordpress API Class
 from __future__ import unicode_literals
 
 # from requests import request
+import json
 import logging
 
 from six import text_type
@@ -214,7 +215,7 @@ class API(object):
                 content_type = value.lower()
 
         if data is not None and content_type.startswith('application/json'):
-            data = StrUtils.jsonencode(data, ensure_ascii=False)
+            data = StrUtils.jsonencode(json.dumps(data.decode("utf-8")), ensure_ascii=False)
 
             # enforce utf-8 encoded binary
             data = StrUtils.to_binary(data)
